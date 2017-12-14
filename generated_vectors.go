@@ -1,5 +1,7 @@
 package golang_raytracer
 
+import "fmt"
+
 //go:generate go run codegen/generate_vectors.go
 type Vec2 struct {
 	X Float
@@ -181,6 +183,10 @@ var Vec2Y = Vec2 {
 	Y:  1, 
 }
 
+
+func (v Vec2) String() string {
+	return fmt.Sprint("[", v.X, ",", v.Y, "]")
+}
 
 //go:generate go run codegen/generate_vectors.go
 type Vec3 struct {
@@ -402,3 +408,273 @@ var Vec3Z = Vec3 {
 	Z:  1, 
 }
 
+
+func (v Vec3) String() string {
+	return fmt.Sprint("[", v.X, ",", v.Y, ",", v.Z, "]")
+}
+
+//go:generate go run codegen/generate_vectors.go
+type Vec4 struct {
+	X Float
+	Y Float
+	Z Float
+	W Float
+}
+
+func (v Vec4) Clone() *Vec4 {
+	return &Vec4 {
+		X: v.X,
+		Y: v.Y,
+		Z: v.Z,
+		W: v.W,
+	}
+}
+
+func (v Vec4) AddV(u Vec4) Vec4 {
+	return Vec4 { 
+		X: v.X + u.X,
+		Y: v.Y + u.Y,
+		Z: v.Z + u.Z,
+		W: v.W + u.W,
+	}
+}
+//func (v *Vec4) AddVi(u *Vec4) *Vec4 {
+//	
+//	v.X += u.X
+//
+//	v.Y += u.Y
+//
+//	v.Z += u.Z
+//
+//	v.W += u.W
+//
+//	return v
+//}
+
+func (v Vec4) SubV(u Vec4) Vec4 {
+	return Vec4 { 
+		X: v.X - u.X,
+		Y: v.Y - u.Y,
+		Z: v.Z - u.Z,
+		W: v.W - u.W,
+	}
+}
+//func (v *Vec4) SubVi(u *Vec4) *Vec4 {
+//	
+//	v.X -= u.X
+//
+//	v.Y -= u.Y
+//
+//	v.Z -= u.Z
+//
+//	v.W -= u.W
+//
+//	return v
+//}
+
+func (v Vec4) MulV(u Vec4) Vec4 {
+	return Vec4 { 
+		X: v.X * u.X,
+		Y: v.Y * u.Y,
+		Z: v.Z * u.Z,
+		W: v.W * u.W,
+	}
+}
+//func (v *Vec4) MulVi(u *Vec4) *Vec4 {
+//	
+//	v.X *= u.X
+//
+//	v.Y *= u.Y
+//
+//	v.Z *= u.Z
+//
+//	v.W *= u.W
+//
+//	return v
+//}
+
+func (v Vec4) DivV(u Vec4) Vec4 {
+	return Vec4 { 
+		X: v.X / u.X,
+		Y: v.Y / u.Y,
+		Z: v.Z / u.Z,
+		W: v.W / u.W,
+	}
+}
+//func (v *Vec4) DivVi(u *Vec4) *Vec4 {
+//	
+//	v.X /= u.X
+//
+//	v.Y /= u.Y
+//
+//	v.Z /= u.Z
+//
+//	v.W /= u.W
+//
+//	return v
+//}
+
+func (v Vec4) AddS(s Float) Vec4 {
+	return Vec4 { 
+		X: v.X + s,
+		Y: v.Y + s,
+		Z: v.Z + s,
+		W: v.W + s,
+	}
+}
+//func (v *Vec4) AddSi(s Float) *Vec4 {
+//	
+//	v.X += s
+//
+//	v.Y += s
+//
+//	v.Z += s
+//
+//	v.W += s
+//
+//	return v
+//}
+
+func (v Vec4) SubS(s Float) Vec4 {
+	return Vec4 { 
+		X: v.X - s,
+		Y: v.Y - s,
+		Z: v.Z - s,
+		W: v.W - s,
+	}
+}
+//func (v *Vec4) SubSi(s Float) *Vec4 {
+//	
+//	v.X -= s
+//
+//	v.Y -= s
+//
+//	v.Z -= s
+//
+//	v.W -= s
+//
+//	return v
+//}
+
+func (v Vec4) MulS(s Float) Vec4 {
+	return Vec4 { 
+		X: v.X * s,
+		Y: v.Y * s,
+		Z: v.Z * s,
+		W: v.W * s,
+	}
+}
+//func (v *Vec4) MulSi(s Float) *Vec4 {
+//	
+//	v.X *= s
+//
+//	v.Y *= s
+//
+//	v.Z *= s
+//
+//	v.W *= s
+//
+//	return v
+//}
+
+func (v Vec4) DivS(s Float) Vec4 {
+	return Vec4 { 
+		X: v.X / s,
+		Y: v.Y / s,
+		Z: v.Z / s,
+		W: v.W / s,
+	}
+}
+//func (v *Vec4) DivSi(s Float) *Vec4 {
+//	
+//	v.X /= s
+//
+//	v.Y /= s
+//
+//	v.Z /= s
+//
+//	v.W /= s
+//
+//	return v
+//}
+
+func (v Vec4) Mag2() Float {
+	return  v.X*v.X + v.Y*v.Y + v.Z*v.Z + v.W*v.W
+}
+func (v Vec4) Mag() Float {
+	return Sqrt( v.X*v.X+ v.Y*v.Y+ v.Z*v.Z+ v.W*v.W)
+}
+func (v Vec4) UnitV() Vec4 {
+	l := Float(1.0)/Sqrt( v.X*v.X+ v.Y*v.Y+ v.Z*v.Z+ v.W*v.W)
+	return Vec4 {
+		X: v.X*l,
+		Y: v.Y*l,
+		Z: v.Z*l,
+		W: v.W*l,
+	}
+}
+//func (v *Vec4) UnitVi() *Vec4 {
+//	l := Float(1.0)/Sqrt( v.X*v.X+ v.Y*v.Y+ v.Z*v.Z+ v.W*v.W)
+//
+//	v.X *= l
+//
+//	v.Y *= l
+//
+//	v.Z *= l
+//
+//	v.W *= l
+//
+//	return v
+//}
+
+func (v Vec4) Dot(u Vec4) Float {
+	return  v.X*v.X + v.Y*v.Y + v.Z*v.Z + v.W*v.W
+}
+
+var Vec4Zero = Vec4 {
+		X: 0,
+		Y: 0,
+		Z: 0,
+		W: 0,
+}
+var Vec4One = Vec4 {
+		X: 1,
+		Y: 1,
+		Z: 1,
+		W: 1,
+}
+
+
+
+var Vec4X = Vec4 {
+	X:  1, 
+	Y:  0, 
+	Z:  0, 
+	W:  0, 
+}
+
+var Vec4Y = Vec4 {
+	X:  0, 
+	Y:  1, 
+	Z:  0, 
+	W:  0, 
+}
+
+var Vec4Z = Vec4 {
+	X:  0, 
+	Y:  0, 
+	Z:  1, 
+	W:  0, 
+}
+
+var Vec4W = Vec4 {
+	X:  0, 
+	Y:  0, 
+	Z:  0, 
+	W:  1, 
+}
+
+
+func (v Vec4) String() string {
+	return fmt.Sprint("[", v.X, ",", v.Y, ",", v.Z, ",", v.W, "]")
+}

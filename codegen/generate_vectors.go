@@ -13,7 +13,9 @@ import (
 func main() {
 	f, err := os.Create("generated_vectors.go")
 	die(err)
-	fmt.Fprintln(f, "package golang_raytracer")
+	fmt.Fprintln(f, `package golang_raytracer
+
+import "fmt"`)
 
 	v2 := Type{
 		F:      f,
@@ -25,8 +27,13 @@ func main() {
 		T:      "Vec3",
 		Fields: []string{"X", "Y", "Z"},
 	}
+	v4 := Type{
+		F:      f,
+		T:      "Vec4",
+		Fields: []string{"X", "Y", "Z", "W"},
+	}
 
-	for _, t := range []Type{v2, v3} {
+	for _, t := range []Type{v2, v3, v4} {
 		t.WriteType()
 		t.Clone()
 
@@ -43,6 +50,7 @@ func main() {
 		t.Mag()
 		t.Dot()
 		t.Constants()
+		t.MakeString()
 	}
 }
 
@@ -152,7 +160,6 @@ func (v {{.T}}) Dot(u {{.T}}) Float {
 	die(err)
 }
 
-
 func (t *Type) Mag() {
 	err := template.Must(template.New("").Parse(`
 func (v {{.T}}) Mag2() Float {
@@ -202,6 +209,16 @@ var {{$T}}{{.}} = {{$T}} {
 	{{- end }}
 }
 {{ end }}
+`)).Execute(
+		t.F, t)
+	die(err)
+}
+
+func (t *Type) MakeString() {
+	err := template.Must(template.New("").Parse(`
+func (v {{.T}}) String() string {
+	return fmt.Sprint("[", {{- range $i, $f := .Fields }} {{- if $i}}, ",",{{end}} v.{{.}}{{- end }}, "]")
+}
 `)).Execute(
 		t.F, t)
 	die(err)

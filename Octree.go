@@ -14,6 +14,7 @@ type OctreeNode struct {
 }
 
 func (n *OctreeNode) Subdivide() {
+	// TODO
 	diag2 := n.BBox.Diag().MulS(1.0 / 2.0)
 	for x := 0; x < 2; x++ {
 		for y := 0; y < 2; y++ {
