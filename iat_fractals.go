@@ -7,7 +7,7 @@ import (
 
 func TransformPoints(pts []Vec2, mats []Matrix3, depth int) []Vec2 {
 	for {
-		var newpts []Vec2
+		newpts := make([]Vec2, 0, len(mats)*len(pts))
 
 		for _, m := range mats {
 			for _, p := range pts {
@@ -22,12 +22,14 @@ func TransformPoints(pts []Vec2, mats []Matrix3, depth int) []Vec2 {
 		}
 	}
 }
-
 func RenderFractal(mats []Matrix3, filename string, depth int) {
+	RenderFractal0(mats, filename, depth, 800, [4]Float{-1.0, 1.0, -1.0, 1.0})
+}
+func RenderFractal0(mats []Matrix3, filename string, depth int, width int, bounds [4]Float) {
 	pts := TransformPoints([]Vec2{Vec2Zero}, mats, depth)
-	img := RasterizePoints(800, pts)
+	img := RasterizePoints0(width, pts, bounds)
 	f, err := os.Create(filename)
-	die(err)
-	die(png.Encode(f, img))
-	die(f.Close())
+	Die(err)
+	Die(png.Encode(f, img))
+	Die(f.Close())
 }

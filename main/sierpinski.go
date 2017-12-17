@@ -8,5 +8,5 @@ func main() {
 		m.Scale2D(0, 1, 0.5),
 		m.Scale2D(1, -1, 0.5),
 	}
-	m.RenderFractal(sierpinski, "sierpinski.png", 12)
+	m.RenderFractal(sierpinski, "sierpinski.png", 15)
 }

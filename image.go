@@ -5,11 +5,31 @@ import (
 	"image/color"
 )
 
-func RasterizePoints(width int, pts []Vec2) image.Image {
-	xmin := -1.0
-	ymin := -1.0
-	xmax := 1.0
-	ymax := 1.0
+//func ReRangePoints(pts []Vec2, wd int, bounds [4]Float) []Vec2 {
+//	outpts := make([]Vec2, 0, len(pts))
+//	xmin := bounds[0]
+//	xmax := bounds[1]
+//	ymin := bounds[2]
+//	ymax := bounds[3]
+//	wdF := Float(wd)
+//	for _, p := range pts {
+//		outpts = append(outpts,
+//			Vec2{
+//				(p.X - xmin) / (xmax - xmin) * (wdF - 1),
+//				wdF - 1 - (p.Y-ymin)/(ymax-ymin)*(wdF-1),
+//			})
+//	}
+//	return outpts
+//}
+
+func RasterizePoints1(width int, pts []Vec2) image.Image {
+	return RasterizePoints0(width, pts, [4]Float{-1.0, 1.0, -1.0, 1.0})
+}
+func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
+	xmin := bounds[0]
+	xmax := bounds[1]
+	ymin := bounds[2]
+	ymax := bounds[3]
 	img := image.NewNRGBA(image.Rect(0, 0, width, width))
 
 	for y := 0; y < width; y++ {

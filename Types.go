@@ -22,7 +22,7 @@ func (r *Ray) PointAt(t Float) Vec3 {
 	return v.AddV(r.Origin)
 }
 
-func die(err error) {
+func Die(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
