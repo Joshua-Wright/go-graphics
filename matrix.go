@@ -41,7 +41,7 @@ func (m *Matrix3) TransformVec(v *Vec2) Vec2 {
 	}
 }
 
-func (m1 *Matrix3) Compose(m2 *Matrix3) (rvalue Matrix3) {
+func (m1 Matrix3) Compose(m2 Matrix3) (rvalue Matrix3) {
 	// matrix multiplication
 	for i := 0; i < 3; i += 1 {
 		for j := 0; j < 3; j += 1 {

@@ -23,7 +23,7 @@ func TransformPoints(pts []Vec2, mats []Matrix3, depth int) []Vec2 {
 	}
 }
 func RenderFractal(mats []Matrix3, filename string, depth int) {
-	RenderFractal0(mats, filename, depth, 800, [4]Float{-1.0, 1.0, -1.0, 1.0})
+	RenderFractal0(mats, filename, depth, 800, DefaultFractalBounds)
 }
 func RenderFractal0(mats []Matrix3, filename string, depth int, width int, bounds [4]Float) {
 	pts := TransformPoints([]Vec2{Vec2Zero}, mats, depth)
@@ -33,3 +33,5 @@ func RenderFractal0(mats []Matrix3, filename string, depth int, width int, bound
 	Die(png.Encode(f, img))
 	Die(f.Close())
 }
+
+var DefaultFractalBounds = [4]Float{-1.0, 1.0, -1.0, 1.0}

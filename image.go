@@ -23,7 +23,7 @@ import (
 //}
 
 func RasterizePoints1(width int, pts []Vec2) image.Image {
-	return RasterizePoints0(width, pts, [4]Float{-1.0, 1.0, -1.0, 1.0})
+	return RasterizePoints0(width, pts, DefaultFractalBounds)
 }
 func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
 	xmin := bounds[0]
