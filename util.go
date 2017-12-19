@@ -3,6 +3,9 @@ package golang_raytracer
 import (
 	"math"
 	"log"
+	"path/filepath"
+	"os"
+	"fmt"
 )
 
 //type Float = float32
@@ -26,4 +29,9 @@ func Die(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func ExecutableName() string { return filepath.Base(os.Args[0]) }
+func ExecutableNamePng() string {
+	return fmt.Sprintf("%s.png", ExecutableName())
 }
