@@ -17,9 +17,11 @@ func BSplineSubdivide(pts []Vec2) []Vec2 {
 
 func BSplineAverage(pts []Vec2) []Vec2 {
 	pts2 := make([]Vec2, 0, 2*len(pts))
+	pts2 = append(pts2, pts[0])
 	for i := 0; i < len(pts)-1; i++ {
 		pts2 = append(pts2, pts[i].AddV(pts[i+1]).DivS(2))
 	}
+	pts2 = append(pts2, pts[len(pts)-1])
 	return pts2
 }
 
