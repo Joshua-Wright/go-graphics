@@ -102,3 +102,60 @@ func Translate2Dv(v Vec2, ) Matrix3 {
 		{0, 0, 1},
 	}
 }
+
+func MatrixImage2D(p, q, r, phat, qhat, rhat Vec2) Matrix3 {
+	rvalue := Matrix3{}
+
+	// efficient matrix inversion code (math from wikipedia)
+	a := p.X
+	b := q.X
+	c := r.X
+	d := p.Y
+	e := q.Y
+	f := r.Y
+	g := 1.0
+	h := 1.0
+	i := 1.0
+	A := e*i - f*h
+	D := -(b*i - c*h)
+	G := b*f - c*e
+	B := -(d*i - f*g)
+	E := a*i - c*g
+	H := -(a*f - c*d)
+	C := d*h - e*g
+	F := -(a*h - b*g)
+	I := a*e - b*d
+	det := a*A + b*B + c*C
+	det_inv := 1.0 / det
+
+	A_inv := Matrix3{
+		{A, D, G},
+		{B, E, H},
+		{C, F, I},
+	}
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			A_inv[i][j] *= det_inv;
+		}
+	}
+
+	// matrix of output points
+	out_pts := Matrix3{
+		{phat.X, qhat.X, rhat.X},
+		{phat.Y, qhat.Y, rhat.Y},
+		{1, 1, 1},
+	};
+
+	// now multiply output point matrix by inverse of input matrix
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			sum := 0.0;
+			for k := 0; k < 3; k++ {
+				sum += out_pts[i][k] * A_inv[k][j];
+			}
+			rvalue[i][j] = sum;
+		}
+	}
+
+	return rvalue;
+}
