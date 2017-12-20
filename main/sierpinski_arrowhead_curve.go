@@ -11,8 +11,8 @@ func main() {
 	width := 1000
 	xmid := 0.0
 	ymid := 0.0
-	dw := 1.5
-	depth := 4
+	dw := 1.125
+	depth := 5
 	bounds := [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw}
 
 	a := m.Vec2{-1, -1}
@@ -23,6 +23,8 @@ func main() {
 	f := m.Vec2{0, -1}
 
 	start_points := []m.Vec2{a, d, e, c}
+	//start_points := []m.Vec2{a, d, b, e, c}
+	//start_points := []m.Vec2{a, b, c}
 
 	mats := []m.Matrix3{
 		m.MatrixImage2D(
@@ -41,10 +43,10 @@ func main() {
 
 	pts := m.TransformPoints(start_points, mats, depth)
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 8; i++ {
 		pts = m.BSplineSubdivide(pts)
 	}
-	//pts = m.BSpline(pts, 8, 10)
+	//pts = m.BSpline(pts, 8, 3)
 
 	img := m.RasterizePoints0(width, pts, bounds)
 	file, err := os.Create(filename)

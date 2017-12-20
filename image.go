@@ -25,11 +25,20 @@ import (
 func RasterizePoints1(width int, pts []Vec2) image.Image {
 	return RasterizePoints0(width, pts, DefaultFractalBounds)
 }
-func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
+
+func TransformPoint(width int, p Vec2, bounds [4]Float) (int, int) {
 	xmin := bounds[0]
 	xmax := bounds[1]
 	ymin := bounds[2]
 	ymax := bounds[3]
+	x := p.X
+	y := p.Y
+	xi := (x - xmin) / (xmax - xmin) * Float(width-1)
+	yi := Float(width-1) - (y-ymin)/(ymax-ymin)*Float(width-1)
+	return int(xi), int(yi)
+}
+
+func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
 	img := image.NewNRGBA(image.Rect(0, 0, width, width))
 
 	for y := 0; y < width; y++ {
@@ -39,11 +48,8 @@ func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
 	}
 
 	for _, p := range pts {
-		x := p.X
-		y := p.Y
-		xi := (x - xmin) / (xmax - xmin) * Float(width-1)
-		yi := Float(width-1) - (y-ymin)/(ymax-ymin)*Float(width-1)
-		img.Set(int(xi), int(yi), color.NRGBA{255, 255, 255, 255})
+		xi, yi := TransformPoint(width, p, bounds)
+		img.Set(xi, yi, color.NRGBA{255, 255, 255, 255})
 	}
 
 	return img

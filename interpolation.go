@@ -36,3 +36,14 @@ func BSpline(pts []Vec2, iterations int, smoothness int) []Vec2 {
 	}
 	return pts2
 }
+
+func Lagrange(pts []float64, i uint64, t float64) float64 {
+	n := len(pts) - 2
+	if n == 0 {
+		// base case: linearly interpolate two points
+		return pts[0]*(float64(i)+1-t) + pts[1]*(t-float64(i))
+	}
+	f := Lagrange(pts[:len(pts)-1], i, t)
+	g := Lagrange(pts[1:], i+1, t)
+	return ((float64(n)+1+float64(i)-t)*f + (t-float64(i))*g) / (float64(n) + 1)
+}
