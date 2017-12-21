@@ -35,3 +35,14 @@ func ExecutableName() string { return filepath.Base(os.Args[0]) }
 func ExecutableNamePng() string {
 	return fmt.Sprintf("%s.png", ExecutableName())
 }
+
+func MaxAdjacentDistance(pts []Vec2) Float {
+	dmax := pts[0].SubV(pts[1]).Mag2()
+	for i := 1; i < len(pts)-1; i++ {
+		d2 := pts[i].SubV(pts[i+1]).Mag2()
+		if d2 > dmax {
+			dmax = d2
+		}
+	}
+	return Sqrt(dmax)
+}

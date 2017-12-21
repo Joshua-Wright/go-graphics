@@ -43,10 +43,7 @@ func main() {
 
 	pts := m.TransformPoints(start_points, mats, depth)
 
-	for i := 0; i < 8; i++ {
-		pts = m.BSplineSubdivide(pts)
-	}
-	//pts = m.BSpline(pts, 8, 3)
+	pts = m.BSplineAdaptive(pts, 0, 2/m.Float(width))
 
 	img := m.RasterizePoints0(width, pts, bounds)
 	file, err := os.Create(filename)

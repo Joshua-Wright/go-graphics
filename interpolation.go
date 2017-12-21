@@ -37,6 +37,16 @@ func BSpline(pts []Vec2, iterations int, smoothness int) []Vec2 {
 	return pts2
 }
 
+// interpolates until the maximum distance between two adjacent points is less than threshold
+func BSplineAdaptive(pts []Vec2, smoothness int, threshold Float) []Vec2 {
+	for {
+		pts = BSpline(pts, 1, smoothness)
+		if MaxAdjacentDistance(pts) < threshold {
+			return pts
+		}
+	}
+}
+
 func Lagrange(pts []float64, i uint64, t float64) float64 {
 	n := len(pts) - 2
 	if n == 0 {
