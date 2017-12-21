@@ -32,6 +32,9 @@ func Die(err error) {
 }
 
 func ExecutableName() string { return filepath.Base(os.Args[0]) }
+func ExecutableNameWithExtension(s string) string {
+	return fmt.Sprintf("%s.%s", ExecutableName(), s)
+	}
 func ExecutableNamePng() string {
 	return fmt.Sprintf("%s.png", ExecutableName())
 }

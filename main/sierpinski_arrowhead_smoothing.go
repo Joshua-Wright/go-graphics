@@ -3,10 +3,9 @@ package main
 import (
 	m "github.com/joshua-wright/image_stuff/go"
 	"os"
-	"image/png"
 	"fmt"
-	"github.com/jeffail/tunny"
-	"runtime"
+	"sync"
+	"image/png"
 )
 
 func main() {
@@ -49,22 +48,39 @@ func main() {
 
 	os.Mkdir(folder_path, 0777)
 
-	pool, err := tunny.CreatePool(runtime.NumCPU(), func(o interface{}) interface{} {
-		smoothness, _ := o.(int)
-		fmt.Println("smoothness:", smoothness)
-		pts2 := m.BSplineAdaptive(pts, smoothness, 2/m.Float(width))
+	n_frames := 150
+	//frames := make([]*image.Paletted, n_frames)
 
-		img := m.RasterizePoints0(width, pts2, bounds)
-		file, err := os.Create(fmt.Sprintf("%s/%s_%d.png", folder_path, folder_path, smoothness))
-		m.Die(err)
-		m.Die(png.Encode(file, img))
-		m.Die(file.Close())
-		return nil
-	}).Open()
-	m.Die(err)
-	defer pool.Close()
+	var wg sync.WaitGroup
+	for i := 0; i < n_frames; i++ {
+		wg.Add(1)
+		go func(smoothness int) {
+			fmt.Println("smoothness:", smoothness)
+			pts2 := m.BSplineAdaptive(pts, smoothness, 2/m.Float(width))
 
-	for i := 0; i < 150; i++ {
-		pool.SendWork(i)
+			//img := m.RasterizePointsPalletted(width, pts2, bounds)
+			//frames[smoothness] = img
+
+			img := m.RasterizePoints0(width, pts2, bounds)
+			file, err := os.Create(fmt.Sprintf("%s/%s_%d.png", folder_path, folder_path, smoothness))
+			m.Die(err)
+			m.Die(png.Encode(file, img))
+			m.Die(file.Close())
+			wg.Done()
+		}(i)
 	}
+	wg.Wait()
+
+	//outGif := &gif.GIF{}
+	//outGif.Image = frames
+	//outGif.Delay = make([]int, n_frames)
+	//for i := 0; i < n_frames; i++ {
+	//	outGif.Delay[i] = 0
+	//}
+	//
+	//file, err := os.OpenFile(m.ExecutableNameWithExtension("gif"), os.O_WRONLY|os.O_CREATE, 0600)
+	//m.Die(err)
+	//defer file.Close()
+	//gif.EncodeAll(file, outGif)
+
 }

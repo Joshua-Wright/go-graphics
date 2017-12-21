@@ -54,3 +54,25 @@ func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
 
 	return img
 }
+
+func RasterizePointsPalletted(width int, pts []Vec2, bounds [4]Float) *image.Paletted {
+	img := image.NewPaletted(
+		image.Rect(0, 0, width, width),
+		[]color.Color{
+			color.NRGBA{0, 0, 0, 255},
+			color.NRGBA{255, 255, 255, 255},
+		})
+
+	for y := 0; y < width; y++ {
+		for x := 0; x < width; x++ {
+			img.Set(x, y, color.NRGBA{0, 0, 0, 255})
+		}
+	}
+
+	for _, p := range pts {
+		xi, yi := TransformPoint(width, p, bounds)
+		img.Set(xi, yi, color.NRGBA{255, 255, 255, 255})
+	}
+
+	return img
+}
