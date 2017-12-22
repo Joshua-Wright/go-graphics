@@ -1,6 +1,8 @@
 package main
 
-import m "github.com/joshua-wright/image_stuff/go"
+import (
+	m ".."
+)
 
 func main() {
 	sierpinski := []m.Matrix3{
