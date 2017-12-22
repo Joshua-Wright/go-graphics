@@ -18,8 +18,8 @@ func main() {
 	pts = m.BSpline(pts, 9, 1)
 
 	img := m.RasterizePoints0(800, pts, m.DefaultFractalBounds)
-	f, err := os.Create(m.ExecutableNamePng())
+	file, err := os.Create(m.ExecutableNamePng())
 	m.Die(err)
-	m.Die(png.Encode(f, img))
-	m.Die(f.Close())
+	m.Die(png.Encode(file, img))
+	m.Die(file.Close())
 }
