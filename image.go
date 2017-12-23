@@ -26,7 +26,7 @@ func RasterizePoints1(width int, pts []Vec2) image.Image {
 	return RasterizePoints0(width, pts, DefaultFractalBounds)
 }
 
-func TransformPoint(width int, p Vec2, bounds [4]Float) (int, int) {
+func WindowTransformPoint(width int, p Vec2, bounds [4]Float) (int, int) {
 	xmin := bounds[0]
 	xmax := bounds[1]
 	ymin := bounds[2]
@@ -48,7 +48,7 @@ func RasterizePoints0(width int, pts []Vec2, bounds [4]Float) image.Image {
 	}
 
 	for _, p := range pts {
-		xi, yi := TransformPoint(width, p, bounds)
+		xi, yi := WindowTransformPoint(width, p, bounds)
 		img.Set(xi, yi, color.NRGBA{255, 255, 255, 255})
 	}
 
@@ -70,7 +70,7 @@ func RasterizePointsPalletted(width int, pts []Vec2, bounds [4]Float) *image.Pal
 	}
 
 	for _, p := range pts {
-		xi, yi := TransformPoint(width, p, bounds)
+		xi, yi := WindowTransformPoint(width, p, bounds)
 		img.Set(xi, yi, color.NRGBA{255, 255, 255, 255})
 	}
 

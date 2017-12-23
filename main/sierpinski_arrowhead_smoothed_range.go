@@ -61,7 +61,7 @@ func main() {
 			pts2 := m.BSplineAdaptive(pts, smoothness, 2/m.Float(width))
 
 			for i := 0; i < len(pts2); i++ {
-				x, y := m.TransformPoint(width, pts2[i], bounds)
+				x, y := m.WindowTransformPoint(width, pts2[i], bounds)
 				pts2[i] = m.Vec2{m.Float(x), m.Float(y)}
 			}
 

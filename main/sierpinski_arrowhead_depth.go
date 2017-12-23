@@ -69,7 +69,7 @@ func main() {
 			pts := m.TransformPointsSerial(start_points, mats, depth)
 
 			for i := 0; i < len(pts); i++ {
-				x, y := m.TransformPoint(width, pts[i], bounds)
+				x, y := m.WindowTransformPoint(width, pts[i], bounds)
 				pts[i] = m.Vec2{m.Float(x), m.Float(y)}
 			}
 

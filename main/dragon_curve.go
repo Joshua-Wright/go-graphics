@@ -2,38 +2,21 @@ package main
 
 import (
 	m ".."
+	"github.com/fogleman/gg"
+	"image/color"
 )
 
 func main() {
-	// these don't work, not sure why
+	width := 2000
+	xmid := -0.25
+	ymid := -0.25
+	dw := 1.75
+	depth := 11
+	smoothness := 1
+	line_thickness := 2.0
 
-	//t1 := m.Scale2D(-1, 0, math.Sqrt2).Compose(m.Rotate2D(-1, 0, -math.Pi/4.0))
-	//t2 := t1.Compose(m.Rotate2D(0,-1,math.Pi/2))
-
-	//t1 := m.MatrixImage2D(
-	//	m.Vec2{-1, 0}, m.Vec2{0, -1}, m.Vec2{1, 0},
-	//	m.Vec2{-1, 0}, m.Vec2{-1, 1}, m.Vec2{0, -1},
-	//)
-	//t2 := m.MatrixImage2D(
-	//	m.Vec2{-1, 0}, m.Vec2{0, -1}, m.Vec2{1, 0},
-	//	m.Vec2{0, -1}, m.Vec2{0, 0}, m.Vec2{1, 0},
-	//)
-
-	//r := 1.0 / math.Sqrt2
-	//theta1 := math.Pi / 4
-	//theta2 := 5 * math.Pi / 4
-	//t1 := m.Matrix3{
-	//	{r * math.Cos(theta1), -r * math.Sin(theta1), 0},
-	//	{r * math.Sin(theta1), r * math.Cos(theta1), 0},
-	//	{0, 0, 1},
-	//}
-	//t2 := m.Matrix3{
-	//	{r * math.Cos(theta2), -r * math.Sin(theta2), 1},
-	//	{r * math.Sin(theta2), r * math.Cos(theta2), 0},
-	//	{0, 0, 1},
-	//}
-	//
-	//mats := []m.Matrix3{t1, t2}
+	bounds := [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw}
+	filename := m.ExecutableNamePng()
 
 	a := m.Vec2{-1, 0}
 	b := m.Vec2{0, -1}
@@ -50,12 +33,65 @@ func main() {
 			c, e, b,
 		),
 	}
+	t1 := mats[0]
+	t2 := mats[1]
 
-	width := 1000
-	xmid := 0.0
-	ymid := 0.0
-	dw := 1.5
+	// specialize for dragon curve: reverse points from second transform
+	TransformPoints := func(pts []m.Vec2, max_depth int) []m.Vec2 {
+		if max_depth == 0 {
+			return pts
+		}
 
-	//m.RenderFractal(mats, "dragon_curve.png", 15)
-	m.RenderFractal0(mats, m.ExecutableNamePng(), 17, width, [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw})
+		for {
+			if max_depth == 0 {
+				return pts
+			}
+
+			newpts := make([]m.Vec2, 0, len(mats)*len(pts))
+
+			for _, p := range pts {
+				newpts = append(newpts, t1.TransformPoint(&p))
+			}
+			for i := len(pts) - 1; i >= 0; i-- {
+				p := pts[i]
+				newpts = append(newpts, t2.TransformPoint(&p))
+			}
+
+			if max_depth == 0 {
+				return newpts
+			} else {
+				max_depth -= 1
+				pts = newpts
+			}
+		}
+	}
+
+	ctx := gg.NewContext(width, width)
+	// set black background
+	ctx.SetColor(color.NRGBA{0, 0, 0, 255})
+	ctx.DrawRectangle(0, 0, float64(width), float64(width))
+	ctx.Fill()
+
+	pts := TransformPoints([]m.Vec2{m.Vec2Zero}, depth)
+	for i, _ := range pts {
+		x, y := m.WindowTransformPoint(width, pts[i], bounds)
+		pts[i] = m.Vec2{m.Float(x), m.Float(y)}
+	}
+	pts = m.BSplineAdaptive(pts, smoothness, 1.0)
+
+	ctx.SetColor(color.NRGBA{255, 255, 255, 255})
+	ctx.SetLineWidth(line_thickness)
+	for i, p := range pts {
+		if i+1 == len(pts) {
+			break
+		}
+		x1 := p.X
+		y1 := p.Y
+		x2 := pts[i+1].X
+		y2 := pts[i+1].Y
+		ctx.DrawLine(x1, y1, x2, y2)
+	}
+	ctx.Stroke()
+
+	m.Die(ctx.SavePNG(filename))
 }
