@@ -10,23 +10,19 @@ import (
 	"math"
 )
 
-var colors = []color.NRGBA{
-	{63, 81, 181, 255},
-	{0, 150, 136, 255},
-	{0, 188, 212, 255},
-	{103, 58, 183, 255},
-	{139, 195, 74, 255},
-	{156, 39, 176, 255},
-	{205, 220, 57, 255},
-	{233, 30, 99, 255},
-	{244, 67, 54, 255},
-	{255, 152, 0, 255},
-	{255, 193, 7, 255},
-	{255, 235, 59, 255},
-	{255, 87, 34, 255},
-	{3, 169, 244, 255},
-	{33, 150, 243, 255},
-	{76, 175, 80, 255},
+var colors = []string{
+	"#13a2dd",
+	"#2a8c2a",
+	"#c73232",
+	"#80267f",
+	"#2e8c74",
+	"#66361f",
+	"#d9a641",
+	"#c73232",
+	"#195555",
+	"#3dcc3d",
+	"#4545e6",
+	"#b037b0",
 }
 
 func main() {
@@ -68,8 +64,7 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < n_depths; i++ {
 		wg.Add(1)
-		//go
-		func(depth int) {
+		go func(depth int) {
 			fmt.Println("depth:", depth)
 			pts := m.TransformPointsSerial(start_points, mats, depth)
 
@@ -83,7 +78,6 @@ func main() {
 			wg.Done()
 		}(i)
 	}
-	wg.Wait()
 
 	img := image.NewNRGBA(image.Rect(0, 0, width, width))
 	for y := 0; y < width; y++ {
@@ -98,11 +92,14 @@ func main() {
 	ctx.DrawRectangle(0, 0, float64(width), float64(width))
 	ctx.Fill()
 
+	// don't wait for points until we absolutely need to
+	wg.Wait()
+
 	for i := n_depths - 1; i >= 0; i-- {
 		smooth_pts := m.BSplineAdaptive(pointsAtDepth[i], 0, 1)
 		c := colors[i%len(colors)]
 
-		ctx.SetColor(c)
+		ctx.SetHexColor(c)
 		ctx.SetLineWidth(thickest_line * math.Pow(line_step, float64(i)))
 		for i, p := range smooth_pts {
 			if (i+1 == len(smooth_pts)) {
