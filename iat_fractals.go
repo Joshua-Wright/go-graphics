@@ -7,11 +7,30 @@ import (
 	"sync"
 )
 
-func TransformPoints(pts []Vec2, mats []Matrix3, max_depth int) []Vec2 {
+func TransformPointsSerial(pts []Vec2, mats []Matrix3, max_depth int) []Vec2 { return TransformPointsImpl(pts, mats, max_depth, false) }
+func TransformPoints(pts []Vec2, mats []Matrix3, max_depth int) []Vec2       { return TransformPointsImpl(pts, mats, max_depth, true) }
+
+func TransformPointsImpl(pts []Vec2, mats []Matrix3, max_depth int, parallel bool) []Vec2 {
 	// make sure that we don't do parallel computation unless the data size
 	// is larger than some threshold
 	threshold := 256
+
+	// FIXME: this is not particularly efficient
+	if max_depth == 0 {
+		// do not return input array
+		tmp := make([]Vec2, len(pts))
+		copy(tmp, pts)
+		return tmp
+	}
+
 	for {
+		if max_depth == 0 {
+			// do not return input array
+			tmp := make([]Vec2, len(pts))
+			copy(tmp, pts)
+			return tmp
+		}
+
 		newpts := make([]Vec2, 0, len(mats)*len(pts))
 
 		for _, m := range mats {
@@ -21,7 +40,7 @@ func TransformPoints(pts []Vec2, mats []Matrix3, max_depth int) []Vec2 {
 		}
 		if max_depth == 0 {
 			return newpts
-		} else if len(newpts) > threshold {
+		} else if len(newpts) > threshold && parallel {
 			max_depth -= 1
 			return transformPointsParallelImpl(newpts, mats, max_depth)
 		} else {
@@ -46,6 +65,10 @@ func transformPointsParallelImpl(pts []Vec2, mats []Matrix3, max_depth int) []Ve
 
 	var worker func(startInclusive, endExclusive, d int)
 	worker = func(startInclusive, endExclusive, d int) {
+		if d == max_depth {
+			wg.Done()
+			return
+		}
 		for midx, m := range mats {
 			for idx := startInclusive; idx < endExclusive; idx++ {
 				i := idx % n_pts
