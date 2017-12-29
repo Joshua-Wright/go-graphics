@@ -27,6 +27,12 @@ func (m *Matrix4) TransformRay(t *Ray) Ray {
 
 type Matrix3 [3][3]Float
 
+var Matrix3Identity = Matrix3{
+	{1, 0, 0},
+	{0, 1, 0},
+	{0, 0, 1},
+}
+
 func (m *Matrix3) TransformPoint(p *Vec2) Vec2 {
 	return Vec2{
 		m[0][0]*p.X + m[0][1]*p.Y + m[0][2],

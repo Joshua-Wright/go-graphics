@@ -4,6 +4,7 @@ import (
 	m ".."
 	"github.com/fogleman/gg"
 	"image/color"
+	"math"
 )
 
 func main() {
@@ -11,9 +12,9 @@ func main() {
 	xmid := -0.25
 	ymid := -0.25
 	dw := 1.75
-	depth := 11
-	smoothness := 1
-	line_thickness := 2.0
+	depth := 10
+	smoothness := 12
+	line_thickness := 4.0
 
 	bounds := [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw}
 	filename := m.ExecutableNamePng()
@@ -72,26 +73,42 @@ func main() {
 	ctx.DrawRectangle(0, 0, float64(width), float64(width))
 	ctx.Fill()
 
-	pts := TransformPoints([]m.Vec2{m.Vec2Zero}, depth)
-	for i, _ := range pts {
-		x, y := m.WindowTransformPoint(width, pts[i], bounds)
-		pts[i] = m.Vec2{m.Float(x), m.Float(y)}
-	}
-	pts = m.BSplineAdaptive(pts, smoothness, 1.0)
+	dragon := func(transform m.Matrix3, color color.Color) {
 
-	ctx.SetColor(color.NRGBA{255, 255, 255, 255})
-	ctx.SetLineWidth(line_thickness)
-	for i, p := range pts {
-		if i+1 == len(pts) {
-			break
+		//pts := TransformPoints([]m.Vec2{m.Vec2Zero}, depth)
+		pts := TransformPoints([]m.Vec2{a, b, c}, depth)
+		for i, _ := range pts {
+			p := transform.TransformPoint(&pts[i])
+			x, y := m.WindowTransformPoint(width, p, bounds)
+			pts[i] = m.Vec2{m.Float(x), m.Float(y)}
 		}
-		x1 := p.X
-		y1 := p.Y
-		x2 := pts[i+1].X
-		y2 := pts[i+1].Y
-		ctx.DrawLine(x1, y1, x2, y2)
+		pts = m.BSplineAdaptive(pts, smoothness, 1.0)
+		//pts = m.BSplineAdaptive(pts, 0, 10.0)
+		//for i := 0; i < smoothness*5; i++ {
+		//	pts = m.BSplineAverage(pts)
+		//}
+
+		//ctx.SetColor(color.NRGBA{255, 255, 255, 255})
+		ctx.SetColor(color)
+		ctx.SetLineWidth(line_thickness)
+		for i, p := range pts {
+			if i+1 == len(pts) {
+				break
+			}
+			x1 := p.X
+			y1 := p.Y
+			x2 := pts[i+1].X
+			y2 := pts[i+1].Y
+			ctx.DrawLine(x1, y1, x2, y2)
+		}
+		ctx.Stroke()
 	}
-	ctx.Stroke()
+
+	// do 4 rotations with different colors
+	dragon(m.Matrix3Identity, color.NRGBA{255, 35, 24, 255})
+	dragon(m.Rotate2D(-1, 0, math.Pi/2), color.NRGBA{255,133, 24, 255})
+	dragon(m.Rotate2D(-1, 0, math.Pi), color.NRGBA{ 23,206,224, 255})
+	dragon(m.Rotate2D(-1, 0, math.Pi*3.0/2.0), color.NRGBA{ 22,237, 48, 255})
 
 	m.Die(ctx.SavePNG(filename))
 }
