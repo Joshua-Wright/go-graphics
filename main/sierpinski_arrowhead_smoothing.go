@@ -59,7 +59,7 @@ func main() {
 			fmt.Println("smoothness:", smoothness)
 			pts2 := m.BSplineAdaptive(pts, smoothness, 2/m.Float(width))
 
-			img := m.RasterizePointsPalletted(width, pts2, bounds)
+			img := m.RasterizePointsPalletted(width, width, pts2, bounds)
 			frames[smoothness] = img
 
 			//img := m.RasterizePoints0(width, pts2, bounds)

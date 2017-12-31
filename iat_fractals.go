@@ -95,11 +95,11 @@ func transformPointsParallelImpl(pts []Vec2, mats []Matrix3, max_depth int) []Ve
 }
 
 func RenderFractal(mats []Matrix3, filename string, depth int) {
-	RenderFractal0(mats, filename, depth, 800, DefaultFractalBounds)
+	RenderFractal0(mats, filename, depth, 800, 800, DefaultFractalBounds)
 }
-func RenderFractal0(mats []Matrix3, filename string, depth int, width int, bounds [4]Float) {
+func RenderFractal0(mats []Matrix3, filename string, depth int, width, height int, bounds [4]Float) {
 	pts := TransformPoints([]Vec2{Vec2Zero}, mats, depth)
-	img := RasterizePoints0(width, pts, bounds)
+	img := RasterizePoints0(width, height, pts, bounds)
 	file, err := os.Create(filename)
 	Die(err)
 	Die(png.Encode(file, img))
@@ -107,3 +107,12 @@ func RenderFractal0(mats []Matrix3, filename string, depth int, width int, bound
 }
 
 var DefaultFractalBounds = [4]Float{-1.0, 1.0, -1.0, 1.0}
+
+func BoundsForResolution(xmid, ymid, xwidth Float, w_res, h_res int) [4]Float {
+	// half width to get distance from center to edge
+	xwidth = xwidth / 2
+	aspect := Float(w_res) / Float(h_res)
+	ywidth := Float(xwidth) / aspect
+	bounds := [4]Float{xmid - xwidth, xmid + xwidth, ymid - ywidth, ymid + ywidth}
+	return bounds
+}

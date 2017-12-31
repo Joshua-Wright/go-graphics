@@ -20,6 +20,7 @@ func main() {
 	// so final ratio is 5:(8*16*5/9) = 5:16.88888888
 	// for 1440px height, width should be 16.9*1440=24320.0000000000000000016
 	width := 24320 / 4
+	height := 24320 / 4
 	// also, center about (-1,0) to get the joining point in the middle of the middle moitor
 	xmid := 0.0
 	ymid := 0.0
@@ -27,7 +28,7 @@ func main() {
 	depth := 10
 	smoothness := 12
 	line_thickness := 3.0
-	neon_glow_radius := 64
+	neon_glow_radius := 16
 
 	bounds := [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw}
 	filename := m.ExecutableNamePng()
@@ -88,24 +89,24 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	img := image.NewNRGBA(image.Rect(0, 0, width, width))
-	for y := 0; y < width; y++ {
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			img.Set(x, y, color.NRGBA{0, 0, 0, 255})
 		}
 	}
 
 	dragon := func(transform m.Matrix3, linecolor color.NRGBA) {
-		ctx := gg.NewContext(width, width)
+		ctx := gg.NewContext(width, height)
 		// set black background
 		ctx.SetColor(color.NRGBA{0, 0, 0, 255})
-		ctx.DrawRectangle(0, 0, float64(width), float64(width))
+		ctx.DrawRectangle(0, 0, float64(width), float64(height))
 		ctx.Fill()
 
 		pts2 := make([]m.Vec2, len(pts))
 		for i := 0; i < len(pts); i++ {
 			p := transform.TransformPoint(&pts[i])
-			x, y := m.WindowTransformPoint(width, p, bounds)
+			x, y := m.WindowTransformPoint(width, height, p, bounds)
 			pts2[i] = m.Vec2{m.Float(x), m.Float(y)}
 		}
 		//ctx.SetColor(linecolor)
@@ -139,7 +140,7 @@ func main() {
 		println("drew lines")
 
 		im := ctx.Image()
-		for y := 0; y < width; y++ {
+		for y := 0; y < height; y++ {
 			for x := 0; x < width; x++ {
 				r, g, b, _ := im.At(x, y).RGBA()
 				if r != 0 || g != 0 || b != 0 {

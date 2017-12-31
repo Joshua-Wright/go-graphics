@@ -9,6 +9,7 @@ import (
 func main() {
 	filename := m.ExecutableNamePng()
 	width := 1000
+	height := 1000
 	xmid := 0.0
 	ymid := 0.0
 	dw := 1.125
@@ -45,7 +46,7 @@ func main() {
 
 	pts = m.BSplineAdaptive(pts, 0, 2/m.Float(width))
 
-	img := m.RasterizePoints0(width, pts, bounds)
+	img := m.RasterizePoints0(width, height, pts, bounds)
 	file, err := os.Create(filename)
 	m.Die(err)
 	m.Die(png.Encode(file, img))

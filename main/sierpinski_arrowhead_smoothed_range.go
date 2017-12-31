@@ -13,6 +13,7 @@ import (
 func main() {
 	//filename := m.ExecutableNamePng()
 	width := 1000
+	height := 1000
 	xmid := 0.0
 	ymid := 0.0
 	dw := 1.125
@@ -61,7 +62,7 @@ func main() {
 			pts2 := m.BSplineAdaptive(pts, smoothness, 2/m.Float(width))
 
 			for i := 0; i < len(pts2); i++ {
-				x, y := m.WindowTransformPoint(width, pts2[i], bounds)
+				x, y := m.WindowTransformPoint(width, height, pts2[i], bounds)
 				pts2[i] = m.Vec2{m.Float(x), m.Float(y)}
 			}
 
@@ -72,8 +73,8 @@ func main() {
 	}
 	wg.Wait()
 
-	img := image.NewNRGBA(image.Rect(0, 0, width, width))
-	for y := 0; y < width; y++ {
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			img.Set(x, y, color.NRGBA{0, 0, 0, 255})
 		}

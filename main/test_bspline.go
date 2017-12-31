@@ -15,9 +15,9 @@ func main() {
 		{-1,-1},
 	}
 
-	pts = m.BSpline(pts, 9, 1)
+	pts = m.BSpline(pts, 10, 1)
 
-	img := m.RasterizePoints0(800, pts, m.DefaultFractalBounds)
+	img := m.RasterizePoints0(800, 800, pts, m.DefaultFractalBounds)
 	file, err := os.Create(m.ExecutableNamePng())
 	m.Die(err)
 	m.Die(png.Encode(file, img))

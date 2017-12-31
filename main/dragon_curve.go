@@ -8,15 +8,18 @@ import (
 )
 
 func main() {
-	width := 2000
+	width := 2560
+	height := 1440
+	//height := 2560
 	xmid := -0.25
-	ymid := -0.25
+	ymid := -0.33
 	dw := 1.75
 	depth := 10
 	smoothness := 12
 	line_thickness := 4.0
 
-	bounds := [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw}
+	//bounds := [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw}
+	bounds := m.BoundsForResolution(xmid, ymid, dw*2, width, height)
 	filename := m.ExecutableNamePng()
 
 	a := m.Vec2{-1, 0}
@@ -67,10 +70,10 @@ func main() {
 		}
 	}
 
-	ctx := gg.NewContext(width, width)
+	ctx := gg.NewContext(width, height)
 	// set black background
 	ctx.SetColor(color.NRGBA{0, 0, 0, 255})
-	ctx.DrawRectangle(0, 0, float64(width), float64(width))
+	ctx.DrawRectangle(0, 0, float64(width), float64(height))
 	ctx.Fill()
 
 	dragon := func(transform m.Matrix3, color color.Color) {
@@ -79,7 +82,7 @@ func main() {
 		pts := TransformPoints([]m.Vec2{a, b, c}, depth)
 		for i, _ := range pts {
 			p := transform.TransformPoint(&pts[i])
-			x, y := m.WindowTransformPoint(width, p, bounds)
+			x, y := m.WindowTransformPoint(width, height, p, bounds)
 			pts[i] = m.Vec2{m.Float(x), m.Float(y)}
 		}
 		pts = m.BSplineAdaptive(pts, smoothness, 1.0)
@@ -106,9 +109,9 @@ func main() {
 
 	// do 4 rotations with different colors
 	dragon(m.Matrix3Identity, color.NRGBA{255, 35, 24, 255})
-	dragon(m.Rotate2D(-1, 0, math.Pi/2), color.NRGBA{255,133, 24, 255})
-	dragon(m.Rotate2D(-1, 0, math.Pi), color.NRGBA{ 23,206,224, 255})
-	dragon(m.Rotate2D(-1, 0, math.Pi*3.0/2.0), color.NRGBA{ 22,237, 48, 255})
+	dragon(m.Rotate2D(-1, 0, math.Pi/2), color.NRGBA{255, 133, 24, 255})
+	dragon(m.Rotate2D(-1, 0, math.Pi), color.NRGBA{23, 206, 224, 255})
+	dragon(m.Rotate2D(-1, 0, math.Pi*3.0/2.0), color.NRGBA{22, 237, 48, 255})
 
 	m.Die(ctx.SavePNG(filename))
 }

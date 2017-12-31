@@ -31,6 +31,7 @@ func main() {
 	}
 
 	width := 1000
+	height:= 1000
 	//xmid := 0.4
 	//ymid := 0.0
 	//dw := 0.75
@@ -38,6 +39,6 @@ func main() {
 	ymid := 0.0
 	dw := 1.0
 
-	m.RenderFractal0(mats, "golden_dragon.png", 25, width, [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw})
+	m.RenderFractal0(mats, "golden_dragon.png", 25, width, height, [4]m.Float{xmid - dw, xmid + dw, ymid - dw, ymid + dw})
 	//m.RenderFractal0(mats, "golden_dragon.png", 25, width, m.DefaultFractalBounds)
 }

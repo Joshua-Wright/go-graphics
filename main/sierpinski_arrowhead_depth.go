@@ -27,6 +27,7 @@ var colors = []string{
 
 func main() {
 	width := 2000
+	height := 2000
 	thickest_line := 20.0
 	line_step := 0.7
 	xmid := 0.0
@@ -69,7 +70,7 @@ func main() {
 			pts := m.TransformPointsSerial(start_points, mats, depth)
 
 			for i := 0; i < len(pts); i++ {
-				x, y := m.WindowTransformPoint(width, pts[i], bounds)
+				x, y := m.WindowTransformPoint(width, height, pts[i], bounds)
 				pts[i] = m.Vec2{m.Float(x), m.Float(y)}
 			}
 
@@ -79,17 +80,17 @@ func main() {
 		}(i)
 	}
 
-	img := image.NewNRGBA(image.Rect(0, 0, width, width))
-	for y := 0; y < width; y++ {
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			img.Set(x, y, color.NRGBA{0, 0, 0, 255})
 		}
 	}
 
-	ctx := gg.NewContext(width, width)
+	ctx := gg.NewContext(width, height)
 	// set black background
 	ctx.SetColor(color.NRGBA{0, 0, 0, 255})
-	ctx.DrawRectangle(0, 0, float64(width), float64(width))
+	ctx.DrawRectangle(0, 0, float64(width), float64(height))
 	ctx.Fill()
 
 	// don't wait for points until we absolutely need to
