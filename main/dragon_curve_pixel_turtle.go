@@ -7,7 +7,6 @@ import (
 	"image"
 	"image/color"
 	"github.com/lucasb-eyer/go-colorful"
-	"sync"
 )
 
 const (
@@ -97,20 +96,14 @@ func main() {
 	}
 
 	imgs := make([]*image.NRGBA, 4)
-	var wg sync.WaitGroup
-	for i := 0; i < 4; i++ {
-		wg.Add(1)
-		go func(i int) {
-			img := image.NewNRGBA(image.Rect(0, 0, width, height))
-			dragon_curve(img, x, y, i, colors[i])
-			imgs[i] = img
-			wg.Done()
-		}(i)
-	}
-	wg.Wait()
+	m.ParallelFor(0, 4, func(i int) {
+		img := image.NewNRGBA(image.Rect(0, 0, width, height))
+		dragon_curve(img, x, y, i, colors[i])
+		imgs[i] = img
+	})
 
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
-	for y := 0; y < height; y++ {
+	m.ParallelFor(0, height, func(y int) {
 		for x := 0; x < width; x++ {
 
 			// get colors
@@ -144,7 +137,7 @@ func main() {
 			//	}
 			//}
 		}
-	}
+	})
 
 	file, err := os.Create(m.ExecutableNamePng())
 	m.Die(err)

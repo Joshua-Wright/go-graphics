@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"os"
 	"fmt"
+	"sync"
 )
 
 //type Float = float32
@@ -34,7 +35,7 @@ func Die(err error) {
 func ExecutableName() string { return filepath.Base(os.Args[0]) }
 func ExecutableNameWithExtension(s string) string {
 	return fmt.Sprintf("%s.%s", ExecutableName(), s)
-	}
+}
 func ExecutableNamePng() string {
 	return fmt.Sprintf("%s.png", ExecutableName())
 }
@@ -48,4 +49,16 @@ func MaxAdjacentDistance(pts []Vec2) Float {
 		}
 	}
 	return Sqrt(dmax)
+}
+
+func ParallelFor(start, end int, f func(int)) {
+	var wg sync.WaitGroup
+	for i := start; i < end; i++ {
+		wg.Add(1)
+		go func(i int) {
+			f(i)
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
 }
