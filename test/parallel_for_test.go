@@ -1,5 +1,4 @@
 package main
-
 import (
 	m "github.com/joshua-wright/image_stuff/go"
 	"testing"

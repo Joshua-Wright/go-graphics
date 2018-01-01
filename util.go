@@ -7,6 +7,8 @@ import (
 	"os"
 	"fmt"
 	"sync"
+	"image"
+	"image/png"
 )
 
 //type Float = float32
@@ -38,6 +40,16 @@ func ExecutableNameWithExtension(s string) string {
 }
 func ExecutableNamePng() string {
 	return fmt.Sprintf("%s.png", ExecutableName())
+}
+func ExecutableFolderFileName(filename string) string {
+	return filepath.Join(ExecutableName(), filename)
+}
+
+func SaveAsPNG(img image.Image, filename string) {
+	file, err := os.Create(filename)
+	Die(err)
+	Die(png.Encode(file, img))
+	Die(file.Close())
 }
 
 func MaxAdjacentDistance(pts []Vec2) Float {
