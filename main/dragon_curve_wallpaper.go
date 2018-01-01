@@ -8,7 +8,6 @@ import (
 	"image"
 	"os"
 	"image/png"
-	"sync"
 	"fmt"
 )
 
@@ -87,8 +86,6 @@ func main() {
 	pts = m.BSplineAdaptive(pts, smoothness, 1.0/400.0)
 	println("bsplined")
 
-	var wg sync.WaitGroup
-
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -149,7 +146,6 @@ func main() {
 			}
 		}
 		println("merged")
-		wg.Done()
 	}
 
 	// do 4 rotations with different colors
@@ -157,18 +153,15 @@ func main() {
 	orange := color.NRGBA{255, 133, 24, 255}
 	green := color.NRGBA{22, 237, 48, 255}
 	blue := color.NRGBA{23, 206, 224, 255}
-	go dragon(m.Matrix3Identity, red)
-	go dragon(m.Rotate2D(-1, 0, math.Pi/2), orange)
-	go dragon(m.Rotate2D(-1, 0, math.Pi), green)
-	go dragon(m.Rotate2D(-1, 0, math.Pi*3.0/2.0), blue)
-	wg.Add(4)
-
-	go dragon(m.Rotate2D(1, 0, math.Pi*3.0/2.0), blue)
-	go dragon(m.Rotate2D(1, 0, math.Pi), green)
-	go dragon(m.Rotate2D(1, 0, math.Pi/2), orange)
-	wg.Add(3)
-
-	wg.Wait()
+	m.Parallel(
+		func() { dragon(m.Matrix3Identity, red) },
+		func() { dragon(m.Rotate2D(-1, 0, math.Pi/2), orange) },
+		func() { dragon(m.Rotate2D(-1, 0, math.Pi), green) },
+		func() { dragon(m.Rotate2D(-1, 0, math.Pi*3.0/2.0), blue) },
+		func() { dragon(m.Rotate2D(1, 0, math.Pi*3.0/2.0), blue) },
+		func() { dragon(m.Rotate2D(1, 0, math.Pi), green) },
+		func() { dragon(m.Rotate2D(1, 0, math.Pi/2), orange) },
+	)
 
 	println("saving")
 	//m.Die(ctx.SavePNG(filename))

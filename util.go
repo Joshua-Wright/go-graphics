@@ -62,3 +62,9 @@ func ParallelFor(start, end int, f func(int)) {
 	}
 	wg.Wait()
 }
+
+func Parallel(funcs ...func()) {
+	ParallelFor(0, len(funcs), func(i int) {
+		funcs[i]()
+	})
+}
