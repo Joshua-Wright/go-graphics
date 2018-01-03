@@ -4,12 +4,12 @@ import (
 	m "github.com/joshua-wright/image_stuff/go"
 	"github.com/joshua-wright/image_stuff/go/dragon_turtle"
 	"github.com/fogleman/gg"
-	"github.com/anthonynsimon/bild/blend"
 	"image/color"
 	"image"
 	"math"
-	"fmt"
 	"os"
+	"github.com/anthonynsimon/bild/blur"
+	"image/draw"
 )
 
 func main() {
@@ -19,12 +19,14 @@ func main() {
 	// need to make 9 equal to 5, so multiply by 5/9
 	// so final ratio is 5:(8*16*5/9) = 5:16.88888888
 	// for 1440px height, width should be 16.9/5*1440=4867.2
-	width := 4867
+	//width := 4867
+	//height := 1440
+
+	width := 2560
 	height := 1440
-	depth := 16
+	depth := 13
 	line_thickness := 3.0
-	//neon_glow_radius := 15
-	neon_glow_radius := 1
+	neon_glow_radius := 10.0
 	gridsize := 20.0
 	middle := m.Vec2{float64(width / 2), float64(height / 2)}
 
@@ -39,30 +41,18 @@ func main() {
 
 		arcRadius := (pts2[0].SubV(pts2[1]).Mag()) / 2.0
 
-		// neon glow effect
-		for i := 1; i <= neon_glow_radius; i++ {
-			if i != neon_glow_radius {
-				c2 := linecolor
-				// limit max alpha for glow
-				c2.A = uint8(float64(i) / float64(neon_glow_radius) * 24.0)
-				lw := line_thickness + float64(neon_glow_radius-i)
-				ctx.SetColor(c2)
-				ctx.SetLineWidth(lw)
-				fmt.Println("i:", i, "linewidth:", lw, "alpha:", c2.A)
-			} else {
-				ctx.SetColor(linecolor)
-				ctx.SetLineWidth(line_thickness)
-			}
+		ctx.SetColor(linecolor)
+		ctx.SetLineWidth(line_thickness)
 
-			for i := 1; i < len(pts2)-1; i++ {
-				p0 := pts2[i-1]
-				p1 := pts2[i]
-				p2 := pts2[i+1]
-				center, t0, t1 := DragonCurveCenterAndAngles(p0, p1, p2)
-				ctx.DrawArc(center.X, center.Y, arcRadius, t0, t1)
-				ctx.Stroke()
-			}
+		for i := 1; i < len(pts2)-1; i++ {
+			p0 := pts2[i-1]
+			p1 := pts2[i]
+			p2 := pts2[i+1]
+			center, t0, t1 := DragonCurveCenterAndAngles(p0, p1, p2)
+			ctx.DrawArc(center.X, center.Y, arcRadius, t0, t1)
+			ctx.Stroke()
 		}
+		//}
 		println("drew lines")
 
 		err := ctx.SavePNG(m.ExecutableFolderFileName(layername + ".png"))
@@ -76,7 +66,8 @@ func main() {
 	orange := color.NRGBA{255, 133, 24, 255}
 	green := color.NRGBA{22, 237, 48, 255}
 	blue := color.NRGBA{23, 206, 224, 255}
-	layers := make([]image.Image, 5)
+	//layers := make([]image.Image, 5)
+	layers := make([]image.Image, 1+2*4)
 	m.Parallel(
 		func() { // black background
 			ctx := gg.NewContext(width, height)
@@ -87,14 +78,30 @@ func main() {
 			err := ctx.SavePNG(m.ExecutableFolderFileName("background.png"))
 			m.Die(err)
 		},
-		func() { layers[1] = dragon(dragon_turtle.NORTH, red, "north red") },
-		func() { layers[2] = dragon(dragon_turtle.SOUTH, orange, "south orange") },
-		func() { layers[3] = dragon(dragon_turtle.EAST, green, "east green") },
-		func() { layers[4] = dragon(dragon_turtle.WEST, blue, "west blue") },
+		func() {
+			layers[1] = dragon(dragon_turtle.NORTH, red, "north red")
+			layers[2] = blur.Gaussian(layers[1], neon_glow_radius)
+			m.SaveAsPNG(layers[2], m.ExecutableFolderFileName("north red blur.png"))
+		},
+		func() {
+			layers[3] = dragon(dragon_turtle.SOUTH, orange, "south orange")
+			layers[4] = blur.Gaussian(layers[3], neon_glow_radius)
+			m.SaveAsPNG(layers[4], m.ExecutableFolderFileName("south orange blur.png"))
+		},
+		func() {
+			layers[5] = dragon(dragon_turtle.EAST, green, "east green")
+			layers[6] = blur.Gaussian(layers[5], neon_glow_radius)
+			m.SaveAsPNG(layers[6], m.ExecutableFolderFileName("east green blur.png"))
+		},
+		func() {
+			layers[7] = dragon(dragon_turtle.WEST, blue, "west blue")
+			layers[8] = blur.Gaussian(layers[7], neon_glow_radius)
+			m.SaveAsPNG(layers[8], m.ExecutableFolderFileName("west blue blur.png"))
+		},
 	)
-	out := blend.Normal(layers[0], layers[1])
-	for i := 2; i < len(layers); i++ {
-		out = blend.Normal(out, layers[i])
+	out := image.NewRGBA(image.Rect(0, 0, width, height))
+	for i := 0; i < len(layers); i++ {
+		draw.Draw(out, layers[i].Bounds(), layers[i], image.ZP, draw.Over)
 	}
 	m.SaveAsPNG(out, m.ExecutableNamePng())
 }
