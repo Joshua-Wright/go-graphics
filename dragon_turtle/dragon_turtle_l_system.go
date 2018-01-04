@@ -53,7 +53,8 @@ func DragonCurveSymbols(depth int) []Symbol {
 	return moves
 }
 
-func DragonCurve(moves []Symbol, start m.Vec2, dir Direction, gridSize m.Float) []m.Vec2 {
+// axes: east, north, west, south
+func DragonCurve(moves []Symbol, start m.Vec2, dir Direction, axes [4]m.Vec2, gridSize m.Float) []m.Vec2 {
 	out := []m.Vec2{}
 	current := start
 	for _, move := range moves {
@@ -68,26 +69,33 @@ func DragonCurve(moves []Symbol, start m.Vec2, dir Direction, gridSize m.Float) 
 
 		case FORWARD:
 			out = append(out, current)
-			switch dir {
-			case NORTH:
-				current.Y += gridSize
-			case SOUTH:
-				current.Y -= gridSize
-			case EAST:
-				current.X += gridSize
-			case WEST:
-				current.X -= gridSize
-			}
+			current = current.AddV(axes[dir].MulS(gridSize))
+			//switch dir {
+			//case NORTH:
+			//	current.Y += gridSize
+			//case SOUTH:
+			//	current.Y -= gridSize
+			//case EAST:
+			//	current.X += gridSize
+			//case WEST:
+			//	current.X -= gridSize
+			//}
 		}
 	}
 	return out
 }
 
-//func main() {
-//	depth := 23
-//
-//	moves := []Symbol{FORWARD, X}
-//	for i := 0; i < depth; i++ {
-//		moves = dragonCurveSingleIteration(moves)
-//	}
-//}
+// east, north, west, south
+var DefaultAxes = [4]m.Vec2{
+	{1, 0},
+	{0, 1},
+	{-1, 0},
+	{0, -1},
+}
+
+var DiagonalAxes = [4]m.Vec2{
+	{1, 1},
+	{-1, 1},
+	{-1, -1},
+	{1, -1},
+}

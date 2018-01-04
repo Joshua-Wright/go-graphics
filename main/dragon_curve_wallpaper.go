@@ -10,6 +10,7 @@ import (
 	"os"
 	"github.com/anthonynsimon/bild/blur"
 	"image/draw"
+	"fmt"
 )
 
 func main() {
@@ -19,15 +20,16 @@ func main() {
 	// need to make 9 equal to 5, so multiply by 5/9
 	// so final ratio is 5:(8*16*5/9) = 5:16.88888888
 	// for 1440px height, width should be 16.9/5*1440=4867.2
-	//width := 4867
-	//height := 1440
+	//width := 4867 * 2
+	//height := 1440 * 2
 
-	width := 2560
-	height := 1440
-	depth := 13
-	line_thickness := 3.0
+	width := 1920
+	height := 1080
+	depth := 20
+	line_thickness := 2.0
 	neon_glow_radius := 10.0
-	gridsize := 20.0
+	neon_glow_factor := 1
+	gridsize := 10.0
 	middle := m.Vec2{float64(width / 2), float64(height / 2)}
 
 	foldername := m.ExecutableName()
@@ -37,7 +39,7 @@ func main() {
 
 	dragon := func(dir dragon_turtle.Direction, linecolor color.NRGBA, layername string) image.Image {
 		ctx := gg.NewContext(width, height)
-		pts2 := dragon_turtle.DragonCurve(syms, middle, dir, gridsize)
+		pts2 := dragon_turtle.DragonCurve(syms, middle, dir, dragon_turtle.DiagonalAxes, gridsize)
 
 		arcRadius := (pts2[0].SubV(pts2[1]).Mag()) / 2.0
 
@@ -80,30 +82,43 @@ func main() {
 		},
 		func() {
 			layers[1] = dragon(dragon_turtle.NORTH, red, "north red")
-			layers[2] = blur.Gaussian(layers[1], neon_glow_radius)
-			m.SaveAsPNG(layers[2], m.ExecutableFolderFileName("north red blur.png"))
 		},
 		func() {
-			layers[3] = dragon(dragon_turtle.SOUTH, orange, "south orange")
-			layers[4] = blur.Gaussian(layers[3], neon_glow_radius)
-			m.SaveAsPNG(layers[4], m.ExecutableFolderFileName("south orange blur.png"))
+			layers[2] = dragon(dragon_turtle.SOUTH, orange, "south orange")
 		},
 		func() {
-			layers[5] = dragon(dragon_turtle.EAST, green, "east green")
-			layers[6] = blur.Gaussian(layers[5], neon_glow_radius)
-			m.SaveAsPNG(layers[6], m.ExecutableFolderFileName("east green blur.png"))
+			layers[3] = dragon(dragon_turtle.EAST, green, "east green")
 		},
 		func() {
-			layers[7] = dragon(dragon_turtle.WEST, blue, "west blue")
-			layers[8] = blur.Gaussian(layers[7], neon_glow_radius)
-			m.SaveAsPNG(layers[8], m.ExecutableFolderFileName("west blue blur.png"))
+			layers[4] = dragon(dragon_turtle.WEST, blue, "west blue")
 		},
 	)
-	out := image.NewRGBA(image.Rect(0, 0, width, height))
-	for i := 0; i < len(layers); i++ {
-		draw.Draw(out, layers[i].Bounds(), layers[i], image.ZP, draw.Over)
+
+	for i := 1; i <= 4; i++ { // run these in serial because they're already parallel
+		layers[i+4] = blur.Gaussian(layers[i], neon_glow_radius)
+		fmt.Println("blurred", i)
 	}
-	m.SaveAsPNG(out, m.ExecutableNamePng())
+	m.Parallel(
+		func() { m.SaveAsPNG(layers[5], m.ExecutableFolderFileName("north red blur.png")) },
+		func() { m.SaveAsPNG(layers[6], m.ExecutableFolderFileName("south orange blur.png")) },
+		func() { m.SaveAsPNG(layers[7], m.ExecutableFolderFileName("east green blur.png")) },
+		func() { m.SaveAsPNG(layers[8], m.ExecutableFolderFileName("west blue blur.png")) },
+		func() {
+			out := image.NewRGBA(image.Rect(0, 0, width, height))
+			draw.Draw(out, layers[0].Bounds(), layers[0], image.ZP, draw.Over)
+			for i := 0; i < neon_glow_factor; i++ {
+				draw.Draw(out, layers[0].Bounds(), layers[5], image.ZP, draw.Over)
+				draw.Draw(out, layers[0].Bounds(), layers[6], image.ZP, draw.Over)
+				draw.Draw(out, layers[0].Bounds(), layers[7], image.ZP, draw.Over)
+				draw.Draw(out, layers[0].Bounds(), layers[8], image.ZP, draw.Over)
+			}
+			draw.Draw(out, layers[0].Bounds(), layers[1], image.ZP, draw.Over)
+			draw.Draw(out, layers[0].Bounds(), layers[2], image.ZP, draw.Over)
+			draw.Draw(out, layers[0].Bounds(), layers[3], image.ZP, draw.Over)
+			draw.Draw(out, layers[0].Bounds(), layers[4], image.ZP, draw.Over)
+			m.SaveAsPNG(out, m.ExecutableNamePng())
+		},
+	)
 }
 
 func DragonCurveCenterAndAngles(start, mid, end m.Vec2) (arcCenter m.Vec2, theta1 float64, theta2 float64) {
