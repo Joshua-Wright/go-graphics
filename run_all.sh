@@ -14,20 +14,18 @@ mains=(
 	test_bspline
 )
 
-mkdir -p build/bin
+mkdir -p build
 cd build
 
 echo > run_log.txt
 for main in ${mains[@]}; do
 	echo $main
-	cd bin
-	if ! go build "../../main/${main}.go"; then
+	if ! go build ../main/${main}.go; then
 		echo "${main} failed to build"
 		echo "${main} failed to build" >> run_log.txt
 		continue
 	fi
-	cd ..
-	if ! "./bin/${main}"; then
+	if ! ./${main}; then
 		echo "${main} failed to run"
 		echo "${main} failed to run" >> run_log.txt
 		continue
