@@ -23,8 +23,8 @@ func main() {
 	//width := 4867 * 2
 	//height := 1440 * 2
 
-	width := 1920
-	height := 1080
+	width := 160
+	height := 90
 	depth := 20
 	line_thickness := 2.0
 	neon_glow_radius := 10.0
@@ -33,7 +33,8 @@ func main() {
 	middle := m.Vec2{float64(width / 2), float64(height / 2)}
 
 	foldername := m.ExecutableName()
-	os.Mkdir(foldername, 0777)
+	err := os.Mkdir(foldername, 0777)
+	fmt.Println(err)
 
 	syms := dragon_turtle.DragonCurveSymbols(depth)
 

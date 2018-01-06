@@ -3,7 +3,6 @@ package main
 import (
 	m "github.com/joshua-wright/go-graphics/graphics"
 	"os"
-	"fmt"
 	"sync"
 	"image"
 	"image/gif"
@@ -56,7 +55,7 @@ func main() {
 	for i := 0; i < n_frames; i++ {
 		wg.Add(1)
 		go func(smoothness int) {
-			fmt.Println("smoothness:", smoothness)
+			//fmt.Println("smoothness:", smoothness)
 			pts2 := m.BSplineAdaptive(pts, smoothness, 2/m.Float(width))
 
 			img := m.RasterizePointsPalletted(width, width, pts2, bounds)

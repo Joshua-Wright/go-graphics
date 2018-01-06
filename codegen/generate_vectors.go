@@ -13,7 +13,7 @@ import (
 func main() {
 	f, err := os.Create("generated_vectors.go")
 	die(err)
-	fmt.Fprintln(f, `package golang_raytracer
+	fmt.Fprintln(f, `package graphics
 
 import "fmt"`)
 
@@ -69,7 +69,7 @@ type Type struct {
 func (t *Type) WriteType() {
 	// TODO don't hard code this
 	err := template.Must(template.New("").Parse(`
-//go:generate go run codegen/generate_vectors.go
+//go:generate go run ../codegen/generate_vectors.go
 type {{.T}} struct {
 {{- range .Fields }}
 	{{ . }} Float

@@ -2,7 +2,7 @@ package graphics
 
 import "fmt"
 
-//go:generate go run codegen/generate_vectors.go
+//go:generate go run ../codegen/generate_vectors.go
 type Vec2 struct {
 	X Float
 	Y Float
@@ -188,7 +188,7 @@ func (v Vec2) String() string {
 	return fmt.Sprint("[", v.X, ",", v.Y, "]")
 }
 
-//go:generate go run codegen/generate_vectors.go
+//go:generate go run ../codegen/generate_vectors.go
 type Vec3 struct {
 	X Float
 	Y Float
@@ -413,7 +413,7 @@ func (v Vec3) String() string {
 	return fmt.Sprint("[", v.X, ",", v.Y, ",", v.Z, "]")
 }
 
-//go:generate go run codegen/generate_vectors.go
+//go:generate go run ../codegen/generate_vectors.go
 type Vec4 struct {
 	X Float
 	Y Float
