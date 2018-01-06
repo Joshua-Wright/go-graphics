@@ -1,4 +1,4 @@
-package golang_raytracer
+package graphics
 
 func BSplineSubdivide(pts []Vec2) []Vec2 {
 	pts2 := make([]Vec2, 0, 2*len(pts))

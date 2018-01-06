@@ -1,4 +1,4 @@
-package golang_raytracer
+package graphics
 
 type Matrix4 [4][4]Float
 

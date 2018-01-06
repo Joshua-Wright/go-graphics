@@ -1,4 +1,4 @@
-package golang_raytracer
+package graphics
 
 import "fmt"
 

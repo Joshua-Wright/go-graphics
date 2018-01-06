@@ -1,4 +1,4 @@
-package golang_raytracer
+package graphics
 
 type Surface interface {
 	// may return null if no bounding box (e.g. planes)

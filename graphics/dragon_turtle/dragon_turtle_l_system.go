@@ -1,7 +1,7 @@
 package dragon_turtle
 
 import (
-	m "github.com/joshua-wright/image_stuff/go"
+	m "github.com/joshua-wright/go-graphics/graphics"
 )
 
 type Symbol int
@@ -70,16 +70,6 @@ func DragonCurve(moves []Symbol, start m.Vec2, dir Direction, axes [4]m.Vec2, gr
 		case FORWARD:
 			out = append(out, current)
 			current = current.AddV(axes[dir].MulS(gridSize))
-			//switch dir {
-			//case NORTH:
-			//	current.Y += gridSize
-			//case SOUTH:
-			//	current.Y -= gridSize
-			//case EAST:
-			//	current.X += gridSize
-			//case WEST:
-			//	current.X -= gridSize
-			//}
 		}
 	}
 	return out

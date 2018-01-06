@@ -1,6 +1,6 @@
 package main
 import (
-	m "github.com/joshua-wright/image_stuff/go"
+	m "github.com/joshua-wright/go-graphics/graphics"
 	"testing"
 	"github.com/stretchr/testify/assert"
 )

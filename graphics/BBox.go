@@ -1,4 +1,4 @@
-package golang_raytracer
+package graphics
 
 type BBox struct {
 	Min Vec3

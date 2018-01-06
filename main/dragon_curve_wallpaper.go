@@ -1,8 +1,8 @@
 package main
 
 import (
-	m "github.com/joshua-wright/image_stuff/go"
-	"github.com/joshua-wright/image_stuff/go/dragon_turtle"
+	m "github.com/joshua-wright/go-graphics/graphics"
+	"github.com/joshua-wright/go-graphics/graphics/dragon_turtle"
 	"github.com/fogleman/gg"
 	"image/color"
 	"image"

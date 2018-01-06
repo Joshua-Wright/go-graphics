@@ -1,7 +1,7 @@
 package main
 
 import (
-	m ".."
+	m "github.com/joshua-wright/go-graphics/graphics"
 	"os"
 	"image/png"
 )

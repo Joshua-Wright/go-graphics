@@ -1,7 +1,7 @@
 package main
 
 import "fmt"
-import m ".."
+import m "github.com/joshua-wright/go-graphics/graphics"
 
 func main() {
 	v := m.Vec3{1, 2, 3}

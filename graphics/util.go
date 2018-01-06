@@ -1,4 +1,4 @@
-package golang_raytracer
+package graphics
 
 import (
 	"math"
@@ -42,6 +42,7 @@ func ExecutableNamePng() string {
 	return fmt.Sprintf("%s.png", ExecutableName())
 }
 func ExecutableFolderFileName(filename string) string {
+	os.Mkdir(ExecutableName(), 077)
 	return filepath.Join(ExecutableName(), filename)
 }
 
