@@ -45,17 +45,3 @@ func Make2DSlicePixelParallel(x, y int, val pixelParallel) [][]pixelParallel {
 	}
 	return out
 }
-
-func Make2DSlicePixelSerial(x, y int, val pixelSerial) [][]pixelSerial {
-	base := make([]pixelSerial, x*y)
-	out := make([][]pixelSerial, x)
-
-	for i := 0; i < x*y; i++ {
-		base[i] = val
-	}
-
-	for i := 0; i < x; i++ {
-		out[i] = base[i*x:(i+1)*x]
-	}
-	return out
-}

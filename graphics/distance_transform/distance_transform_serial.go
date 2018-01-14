@@ -5,6 +5,7 @@ import (
 	"math"
 )
 
+//go:generate go run ../../Slice2D/generator/slice_2d_generator.go PackageLocalType $GOPACKAGE pixelSerial
 type pixelSerial struct {
 	minPos   g.Vec2i
 	minDist2 int // integer distance only because on grid and distance squared
@@ -17,7 +18,12 @@ type pixelUpdateSerial struct {
 }
 
 func DistanceTransform(width, height int, zero_points []g.Vec2i) [][]float64 {
-	mesh := Make2DSlicePixelSerial(width, height, pixelSerial{g.Vec2i{-1, -1}, math.MaxInt64})
+	//mesh := Make2DSlicePixelSerial(width, height, pixelSerial{g.Vec2i{-1, -1}, math.MaxInt64})
+	mesh := NewPixelSerialSlice2D(width, height)
+	for i := 0; i < len(mesh.Data); i++ {
+		mesh.Data[i] = pixelSerial{g.Vec2i{-1, -1}, math.MaxInt64}
+	}
+
 	output_mesh := Make2DSliceFloat64(width, height, 0.0)
 
 	msgBuf := []pixelUpdateSerial{}
@@ -34,11 +40,11 @@ func DistanceTransform(width, height int, zero_points []g.Vec2i) [][]float64 {
 			dy := u.to.Y - u.zeroPoint.Y
 			new_dist2 := dx*dx + dy*dy
 
-			if new_dist2 < mesh[u.to.X][u.to.Y].minDist2 {
+			if new_dist2 < mesh.At(u.to.X, u.to.Y).minDist2 {
 				// update closest pixel
-				mesh[u.to.X][u.to.Y].minPos.X = u.zeroPoint.X
-				mesh[u.to.X][u.to.Y].minPos.Y = u.zeroPoint.Y
-				mesh[u.to.X][u.to.Y].minDist2 = new_dist2
+				mesh.At(u.to.X, u.to.Y).minPos.X = u.zeroPoint.X
+				mesh.At(u.to.X, u.to.Y).minPos.Y = u.zeroPoint.Y
+				mesh.At(u.to.X, u.to.Y).minDist2 = new_dist2
 
 				// update neighbors
 				for i := -1; i <= 1; i++ {
@@ -54,7 +60,7 @@ func DistanceTransform(width, height int, zero_points []g.Vec2i) [][]float64 {
 							from:      u.to,
 							to:        g.Vec2i{x, y},
 						}
-						if x < 0 || x >= width || y < 0 || y >= width {
+						if x < 0 || x >= width || y < 0 || y >= height {
 							// don't send out of bounds
 							continue
 						}
@@ -76,7 +82,8 @@ func DistanceTransform(width, height int, zero_points []g.Vec2i) [][]float64 {
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			output_mesh[x][y] = math.Sqrt(float64(mesh[x][y].minDist2))
+			//output_mesh[x][y] = math.Sqrt(float64(mesh[x][y].minDist2))
+			output_mesh[x][y] = math.Sqrt(float64(mesh.At(x, y).minDist2))
 		}
 	}
 
