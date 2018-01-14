@@ -6,7 +6,7 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/distance_transform"
 	"image/color"
 	"math"
-	"fmt"
+	"runtime"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 	img := image.NewGray16(image.Rect(0, 0, width, height))
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			fmt.Println(x, y, mesh[x][y])
+			//fmt.Println(x, y, mesh[x][y])
 			c := color.Gray16{uint16(mesh[x][y] / maxdist * float64(math.MaxInt16))}
 			img.SetGray16(x, y, c)
 		}
