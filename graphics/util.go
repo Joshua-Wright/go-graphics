@@ -28,6 +28,10 @@ func (r *Ray) PointAt(t Float) Vec3 {
 	return v.AddV(r.Origin)
 }
 
+func Vec2Midpoint(a, b Vec2) Vec2 { return a.AddV(b).DivS(2.0) }
+func Vec3Midpoint(a, b Vec3) Vec3 { return a.AddV(b).DivS(2.0) }
+func Vec4Midpoint(a, b Vec4) Vec4 { return a.AddV(b).DivS(2.0) }
+
 func Die(err error) {
 	if err != nil {
 		log.Fatal(err)
