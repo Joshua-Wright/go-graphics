@@ -31,17 +31,3 @@ func Make2DSliceFloat64(x, y int, val float64) [][]float64 {
 	}
 	return out
 }
-
-func Make2DSlicePixelParallel(x, y int, val pixelParallel) [][]pixelParallel {
-	base := make([]pixelParallel, x*y)
-	out := make([][]pixelParallel, x)
-
-	for i := 0; i < x*y; i++ {
-		base[i] = val
-	}
-
-	for i := 0; i < x; i++ {
-		out[i] = base[i*x:(i+1)*x]
-	}
-	return out
-}
