@@ -89,12 +89,6 @@ func main() {
 		//})
 		distanceGrid := distance_transform.DistanceTransform(width, height, distancePts)
 
-		for i := 0; i < len(distanceGrid); i++ {
-			for j := 0; j < len(distanceGrid[i]); j++ {
-				distanceGrid[i][j] = math.Pow(distanceGrid[i][j], 1.2)
-			}
-		}
-
 		max_dist := 0.0
 		// find largest distance to normalize distanceGrid
 		for i := 0; i < len(distanceGrid); i++ {
@@ -127,8 +121,8 @@ func main() {
 	N := 300
 	//g.ParallelFor(0, N, func(i int) {
 	for i := 0; i < N; i++ {
+		theta := math.Sin(float64(i)/float64(N)*math.Pi-math.Pi/2) * math.Pi / 2
 		fmt.Println(i)
-		theta := float64(i)/float64(N)*math.Pi - math.Pi/2
 		img := frameFunc(theta)
 		g.SaveAsPNG(img, g.ExecutableFolderFileName(fmt.Sprint(N+i))+".png")
 		g.SaveAsPNG(img, g.ExecutableFolderFileName(fmt.Sprint(N-i))+".png")
