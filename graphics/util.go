@@ -9,6 +9,7 @@ import (
 	"sync"
 	"image"
 	"image/png"
+	"runtime"
 )
 
 //type Float = float32
@@ -68,15 +69,28 @@ func MaxAdjacentDistance(pts []Vec2) Float {
 	return Sqrt(dmax)
 }
 
-func ParallelFor(start, end int, f func(int)) {
-	var wg sync.WaitGroup
-	for i := start; i < end; i++ {
-		wg.Add(1)
-		go func(i int) {
-			f(i)
-			wg.Done()
-		}(i)
+func parallelForWorker(wg *sync.WaitGroup, jobs chan int, f func(int)) {
+	for i := range jobs {
+		f(i)
+		wg.Done()
 	}
+}
+
+func ParallelFor(start, end int, f func(int)) {
+	jobs := make(chan int)
+	var wg sync.WaitGroup
+
+	// start workers
+	for i := 0; i < runtime.GOMAXPROCS(-1); i++ {
+		go parallelForWorker(&wg, jobs, f)
+	}
+
+	// queue
+	wg.Add(end - start)
+	for i := start; i < end; i++ {
+		jobs <- i
+	}
+	close(jobs)
 	wg.Wait()
 }
 
