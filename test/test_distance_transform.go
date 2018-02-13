@@ -6,7 +6,6 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/distance_transform"
 	"image/color"
 	"math"
-	"runtime"
 )
 
 func main() {

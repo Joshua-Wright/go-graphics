@@ -47,8 +47,8 @@ func ExecutableNamePng() string {
 	return fmt.Sprintf("%s.png", ExecutableName())
 }
 func ExecutableFolderFileName(filename string) string {
-	os.Mkdir(ExecutableName(), 077)
-	return filepath.Join(ExecutableName(), filename)
+	os.Mkdir(ExecutableName()+"_frames", 0777)
+	return filepath.Join(ExecutableName()+"_frames", filename)
 }
 
 func SaveAsPNG(img image.Image, filename string) {

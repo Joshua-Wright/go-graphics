@@ -3,7 +3,6 @@
 mains=(
 	dragon_curve
 	dragon_curve_pixel_turtle
-	dragon_curve_wallpaper
 	golden_dragon
 	main
 	sierpinski_arrowhead_curve
@@ -11,7 +10,10 @@ mains=(
 	sierpinski_arrowhead_smoothed_range
 	sierpinski_arrowhead_smoothing
 	sierpinski
+	spirograph
 	test_bspline
+	# slow:
+	# dragon_curve_wallpaper
 )
 
 mkdir -p build

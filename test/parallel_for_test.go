@@ -1,4 +1,5 @@
 package main
+
 import (
 	m "github.com/joshua-wright/go-graphics/graphics"
 	"testing"

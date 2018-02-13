@@ -17,7 +17,7 @@ func TestIntSlice2D(t *testing.T) {
 	for i := 0; i < w; i++ {
 		for j := 0; j < w; j++ {
 			assert.Equal(t, slice.Get(i, j), i*j*j)
-			assert.Equal(t, slice.At(i, j), &slice.data[j*w+i])
+			assert.Equal(t, slice.At(i, j), &slice.Data[j*w+i])
 		}
 	}
 }
