@@ -10,6 +10,7 @@ import (
 	"image/color"
 	"fmt"
 	"os"
+	"github.com/joshua-wright/go-graphics/parallel"
 )
 
 func KochCurve(x1, y1, x2, y2, theta float64) []g.Matrix3 {
@@ -102,7 +103,7 @@ func main() {
 		out := image.NewNRGBA(image.Rect(0, 0, width, height))
 		draw.Draw(out, out.Bounds(), image.Black, image.ZP, draw.Over)
 
-		g.ParallelFor(0, len(distanceGrid), func(i int) {
+		parallel.ParallelFor(0, len(distanceGrid), func(i int) {
 			//for i := 0; i < len(distanceGrid); i++ {
 			for j := 0; j < len(distanceGrid[i]); j++ {
 				theta_deg := distanceGrid[i][j] / max_dist * 360

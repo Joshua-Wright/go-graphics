@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	width := 2560
-	height := 1440
+	width := 1280
+	height := 720
 	//height := 2560
 	xmid := -0.25
 	ymid := -0.33

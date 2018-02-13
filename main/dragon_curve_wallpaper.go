@@ -11,6 +11,7 @@ import (
 	"github.com/anthonynsimon/bild/blur"
 	"image/draw"
 	"fmt"
+	"github.com/joshua-wright/go-graphics/parallel"
 )
 
 func main() {
@@ -71,7 +72,7 @@ func main() {
 	blue := color.NRGBA{23, 206, 224, 255}
 	//layers := make([]image.Image, 5)
 	layers := make([]image.Image, 1+2*4)
-	m.Parallel(
+	parallel.ParallelFuncs(
 		func() { // black background
 			ctx := gg.NewContext(width, height)
 			ctx.SetColor(color.NRGBA{0, 0, 0, 255})
@@ -99,7 +100,7 @@ func main() {
 		layers[i+4] = blur.Gaussian(layers[i], neon_glow_radius)
 		fmt.Println("blurred", i)
 	}
-	m.Parallel(
+	parallel.ParallelFuncs(
 		func() { m.SaveAsPNG(layers[5], m.ExecutableFolderFileName("north red blur.png")) },
 		func() { m.SaveAsPNG(layers[6], m.ExecutableFolderFileName("south orange blur.png")) },
 		func() { m.SaveAsPNG(layers[7], m.ExecutableFolderFileName("east green blur.png")) },

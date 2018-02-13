@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/color"
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/joshua-wright/go-graphics/parallel"
 )
 
 const (
@@ -96,14 +97,14 @@ func main() {
 	}
 
 	imgs := make([]*image.NRGBA, 4)
-	m.ParallelFor(0, 4, func(i int) {
+	parallel.ParallelFor(0, 4, func(i int) {
 		img := image.NewNRGBA(image.Rect(0, 0, width, height))
 		dragon_curve(img, x, y, i, colors[i])
 		imgs[i] = img
 	})
 
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
-	m.ParallelFor(0, height, func(y int) {
+	parallel.ParallelFor(0, height, func(y int) {
 		for x := 0; x < width; x++ {
 
 			// get colors
