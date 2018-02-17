@@ -61,7 +61,7 @@ func parallelForAdaptiveWorker(wg *sync.WaitGroup, jobs chan jobRange, results c
 	}
 }
 
-const targetJobRangeTime time.Duration = time.Millisecond * 100
+const targetJobRangeTime time.Duration = time.Millisecond * 500
 
 func ParallelForAdaptive(start, end int, f func(startInclusive, endExclusive int)) (meanJobTime time.Duration) {
 	numCPUs := runtime.GOMAXPROCS(-1)
