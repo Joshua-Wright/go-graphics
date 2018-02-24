@@ -98,6 +98,8 @@ func CliffordFractal(
 	nPreIter, nIter int) *image.NRGBA {
 
 	buffer, maxCount := CliffordFractalCounts(width, height, a, b, c, d, bounds, nPreIter, nIter);
+	println(maxCount)
+
 	out := image.NewNRGBA(image.Rect(0, 0, width, height))
 
 	// add and normalize points
@@ -116,5 +118,52 @@ func CliffordFractal(
 			}
 		}
 	})
+	return out
+}
+
+func CliffordFractalSerial(
+	width, height int,
+	a, b, c, d,
+	maxCount g.Float,
+	bounds [4]g.Float,
+	nPreIter, nIter int) *image.NRGBA {
+
+	counts := Slice2D.NewUint16Slice2D(width, height)
+
+	pt := g.Vec2{
+		X: rand.Float64()*2 - 1,
+		Y: rand.Float64()*2 - 1,
+	}
+	for i := 0; i < nPreIter; i++ {
+		pt = Clifford(a, b, c, d, pt)
+	}
+
+	for i := 0; i < nIter; i++ {
+		pt = Clifford(a, b, c, d, pt)
+		x, y := g.WindowTransformPoint(width, height, pt, bounds)
+		if x >= width || x < 0 || y >= height || y < 0 {
+			println(x, y)
+			panic(g.Vec2i{x, y});
+		}
+		newCount := counts.Get(x, y) + 1
+		counts.Set(x, y, newCount)
+	}
+
+	out := image.NewNRGBA(image.Rect(0, 0, width, height))
+
+	// add and normalize points
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+
+			// normalize
+			count := g.Float(counts.Get(x, y)) / maxCount * 255
+			if count > 255 {
+				count = 255
+			}
+
+			// set element in output image
+			out.Set(x, y, color.Gray{255 - uint8(count)})
+		}
+	}
 	return out
 }
