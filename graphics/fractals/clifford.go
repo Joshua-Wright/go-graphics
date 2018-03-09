@@ -22,19 +22,19 @@ func CliffordFractalCounts(
 	width, height int,
 	a, b, c, d g.Float,
 	bounds [4]g.Float,
-	nPreIter, nIter int) (grid Slice2D.Uint16Slice2D, max uint16) {
+	nPreIter, nIter int) (grid Slice2D.Uint32Slice2D, max uint32) {
 	nProcs := runtime.GOMAXPROCS(-1)
 
-	buffers := make([]Slice2D.Uint16Slice2D, nProcs)
+	buffers := make([]Slice2D.Uint32Slice2D, nProcs)
 	for i := 0; i < len(buffers); i++ {
-		buffers[i] = Slice2D.NewUint16Slice2D(width, height)
+		buffers[i] = Slice2D.NewUint32Slice2D(width, height)
 	}
-	maxes := make([]uint16, nProcs)
+	maxes := make([]uint32, nProcs)
 
 	// iterate points
 	parallel.ParallelFor(0, nProcs, func(workerIndex int) {
 		counts := buffers[workerIndex]
-		var max_count uint16
+		var max_count uint32
 
 		pt := g.Vec2{
 			X: rand.Float64()*2 - 1,
@@ -62,14 +62,14 @@ func CliffordFractalCounts(
 	})
 
 	// find max point count
-	maxCount := uint16(0)
+	maxCount := uint32(0)
 	for _, newCount := range maxes {
 		if newCount > maxCount {
 			maxCount = newCount
 		}
 	}
 
-	outBuffer := Slice2D.NewUint16Slice2D(width, height)
+	outBuffer := Slice2D.NewUint32Slice2D(width, height)
 
 	// aggregate maximums
 	parallel.ParallelForAdaptive(0, width, func(startInclusive, endExclusive int) {
@@ -100,24 +100,8 @@ func CliffordFractal(
 	buffer, maxCount := CliffordFractalCounts(width, height, a, b, c, d, bounds, nPreIter, nIter);
 	println(maxCount)
 
-	out := image.NewNRGBA(image.Rect(0, 0, width, height))
+	out := g.CountBoxImage1(buffer, maxCount, overbleed)
 
-	// add and normalize points
-	parallel.ParallelForAdaptive(0, width, func(startInclusive, endExclusive int) {
-		for x := startInclusive; x < endExclusive; x++ {
-			for y := 0; y < height; y++ {
-
-				// normalize
-				count := g.Float(buffer.Get(x, y)) / g.Float(maxCount) * 255 * overbleed
-				if count > 255 {
-					count = 255
-				}
-
-				// set element in output image
-				out.Set(x, y, color.Gray{255 - uint8(count)})
-			}
-		}
-	})
 	return out
 }
 
@@ -128,7 +112,7 @@ func CliffordFractalSerial(
 	bounds [4]g.Float,
 	nPreIter, nIter int) *image.NRGBA {
 
-	counts := Slice2D.NewUint16Slice2D(width, height)
+	counts := Slice2D.NewUint32Slice2D(width, height)
 
 	pt := g.Vec2{
 		X: rand.Float64()*2 - 1,
