@@ -17,6 +17,11 @@ func Sqrt(f Float) Float { return Float(math.Sqrt(float64(f))) }
 func Sin(f Float) Float  { return Float(math.Sin(float64(f))) }
 func Cos(f Float) Float  { return Float(math.Cos(float64(f))) }
 
+func Lerp(v0, v1, t float64) float64 {
+	// Precise method, which guarantees v = v1 when t = 1 (from wikipedia)
+	return (1-t)*v0 + t*v1
+}
+
 type Ray struct {
 	Origin    Vec3
 	Direction Vec3
@@ -26,10 +31,6 @@ func (r *Ray) PointAt(t Float) Vec3 {
 	v := r.Direction.MulS(t)
 	return v.AddV(r.Origin)
 }
-
-func Vec2Midpoint(a, b Vec2) Vec2 { return a.AddV(b).DivS(2.0) }
-func Vec3Midpoint(a, b Vec3) Vec3 { return a.AddV(b).DivS(2.0) }
-func Vec4Midpoint(a, b Vec4) Vec4 { return a.AddV(b).DivS(2.0) }
 
 func Die(err error) {
 	if err != nil {
