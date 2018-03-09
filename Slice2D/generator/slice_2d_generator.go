@@ -74,6 +74,7 @@ func main() {
 		die(err)
 	} else {
 		types := []Type{
+			// generate only builtin types here, to avoid import cycles
 			BuiltinType("int"),
 			BuiltinType("int8"),
 			BuiltinType("int16"),
@@ -87,12 +88,6 @@ func main() {
 			BuiltinType("string"),
 			BuiltinType("float64"),
 			BuiltinType("float32"),
-			ExternalType("Slice2D", "github.com/joshua-wright/go-graphics/graphics", "graphics", "Vec2"),
-			ExternalType("Slice2D", "github.com/joshua-wright/go-graphics/graphics", "graphics", "Vec3"),
-			ExternalType("Slice2D", "github.com/joshua-wright/go-graphics/graphics", "graphics", "Vec4"),
-			ExternalType("Slice2D", "github.com/joshua-wright/go-graphics/graphics", "graphics", "Vec2i"),
-			ExternalType("Slice2D", "github.com/joshua-wright/go-graphics/graphics", "graphics", "Vec3i"),
-			ExternalType("Slice2D", "github.com/joshua-wright/go-graphics/graphics", "graphics", "Vec4i"),
 			EmptyInterfaceType,
 		}
 
