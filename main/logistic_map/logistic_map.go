@@ -33,20 +33,26 @@ func Uint16AddSaturate(a, b uint16) uint16 {
 	}
 }
 
+func sigmoid_squish(x float64) float64 {
+	x = x * 6
+	return 2*math.Exp(x)/(math.Exp(x)+1) - 1
+}
+
 func main() {
-	//height := 1440
+	//height := 1440*2
 	//width := int(height*16.0/9.0) + 2*int(height*4.0/5.0)
-	width := 1920
-	height := 1080
-	darkPerPoint := uint16(64)
-	nPtsPerX := 64000
+	width := 1920 * 2
+	height := 1080 * 2
+	darkPerPoint := uint16(8)
+	nPtsPerX := 256
+	nPreIter := 2000
 	nIter := 5000
 	exponent := 1 / 5.0
 
 	//rMin := 3.0
-	//rMin := 3.54409
 	// do the full range, and then squish it sideways later
 	rMin := 1.0
+	// rMin := 3.54409
 	rMax := 4.0
 
 	nProcs := runtime.GOMAXPROCS(-1)
@@ -57,7 +63,7 @@ func main() {
 	}
 
 	println("iterate points")
-	iterateBar := pb.StartNew(nProcs*width)
+	iterateBar := pb.StartNew(nProcs * width)
 	parallel.ParallelFor(0, nProcs, func(workerIndex int) {
 		counts := buffers[workerIndex]
 		addPixel := func(i, j int, ammount uint16) {
@@ -70,20 +76,29 @@ func main() {
 
 		for i := 0; i < width; i++ {
 
-			t := float64(i)/float64(width) + (rand.Float64()-0.5)/float64(width)
-			r := g.Lerp(rMin, rMax, math.Pow(t, exponent))
 			for j := 0; j < nPtsPerXPerProc; j++ {
+				t := float64(i)/float64(width) + (rand.Float64()-0.5)/float64(width)
+				// find r
+				r := g.Lerp(rMin, rMax, math.Pow(t, exponent))
+				// r := g.Lerp(rMin, rMax, sigmoid_squish(t))
+				// r := g.Lerp(rMin, rMax, t)
+
 				// locate point
 				x_init := float64(j)/float64(nPtsPerXPerProc) + (rand.Float64()-0.5)/float64(nPtsPerXPerProc)
-				// iterate the point
-				x_final := logistic_map_iter(r, x_init, nIter)
 
-				yval := int(float64(x_final) * float64(height))
-				addPixel(i, height-1-yval, darkPerPoint)
-				addPixel(i, height-1-yval+1, darkPerPoint/2)
-				addPixel(i, height-1-yval-1, darkPerPoint/2)
-				addPixel(i+1, height-1-yval, darkPerPoint/2)
-				addPixel(i-1, height-1-yval, darkPerPoint/2)
+				// iterate the point
+				x_final := logistic_map_iter(r, x_init, nPreIter)
+
+				// iterate the point the rest of the time
+				for k := 0; k < nIter; k++ {
+					yval := int(float64(x_final) * float64(height))
+					addPixel(i, height-1-yval, darkPerPoint)
+					addPixel(i, height-1-yval+1, darkPerPoint/2)
+					addPixel(i, height-1-yval-1, darkPerPoint/2)
+					addPixel(i+1, height-1-yval, darkPerPoint/2)
+					addPixel(i-1, height-1-yval, darkPerPoint/2)
+					x_final = logistic_map(r, x_final)
+				}
 			}
 			iterateBar.Increment()
 		}
