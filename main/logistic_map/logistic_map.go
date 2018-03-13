@@ -4,13 +4,12 @@ import (
 	g "github.com/joshua-wright/go-graphics/graphics"
 	"github.com/joshua-wright/go-graphics/parallel"
 	"github.com/joshua-wright/go-graphics/Slice2D"
+	"github.com/joshua-wright/go-graphics/graphics/colors"
 	"gopkg.in/cheggaaa/pb.v1"
 	"image"
-	"image/draw"
 	"math"
 	"math/rand"
 	"runtime"
-	"image/color"
 )
 
 func logistic_map(r, x float64) float64 {
@@ -54,6 +53,8 @@ func main() {
 	rMin := 1.0
 	// rMin := 3.54409
 	rMax := 4.0
+
+	_ = exponent
 
 	nProcs := runtime.GOMAXPROCS(-1)
 	nPtsPerXPerProc := nPtsPerX / nProcs
@@ -107,15 +108,17 @@ func main() {
 
 	println("reduce")
 	reduceBar := pb.StartNew(width)
-	img := image.NewGray(image.Rect(0, 0, width, height))
-	draw.Draw(img, img.Bounds(), image.White, image.ZP, draw.Over)
+	//img := image.NewGray(image.Rect(0, 0, width, height))
+	img := image.NewPaletted(image.Rect(0, 0, width, height), colors.InfernoColorMap())
+	//draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Over)
 	parallel.ParallelFor(0, width, func(i int) {
 		for j := 0; j < height; j++ {
 			val := uint16(0)
 			for _, buf := range buffers {
 				val = Uint16AddSaturate(val, buf.Get(i, j))
 			}
-			img.SetGray(i, j, color.Gray{255 - uint8(val/256)})
+			//img.SetGray(i, j, color.Gray{255 - uint8(val/256)})
+			img.SetColorIndex(i, j, uint8(val/256))
 		}
 		reduceBar.Increment()
 	})
