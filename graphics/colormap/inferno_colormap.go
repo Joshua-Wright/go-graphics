@@ -1,4 +1,4 @@
-package colors
+package colormap
 
 import "image/color"
 

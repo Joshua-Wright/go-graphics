@@ -8,20 +8,17 @@ import (
 	"gopkg.in/cheggaaa/pb.v1"
 	"image"
 	"math"
-	"math/rand"
 	"runtime"
+	"math/rand"
 )
 
-func logistic_map(r, x float64) float64 {
-	return r * x * (1.0 - x)
-}
-
-func logistic_map_iter(r, x_init float64, nIter int) (x float64) {
-	x = x_init
-	for i := 0; i < nIter; i++ {
-		x = logistic_map(r, x)
+func chua_circuit(a, b, c, d float64, v g.Vec3) g.Vec3 {
+	fx := c*v.X + 0.5*(d-c)*(math.Abs(v.X+1)-math.Abs(v.X-1))
+	return g.Vec3{
+		X: a * (v.Y - v.X - fx),
+		Y: v.X - v.Y + v.Z,
+		Z: -b * v.Y,
 	}
-	return x
 }
 
 func Uint16AddSaturate(a, b uint16) uint16 {
@@ -32,41 +29,51 @@ func Uint16AddSaturate(a, b uint16) uint16 {
 	}
 }
 
-func sigmoid_squish(x float64) float64 {
-	x = x * 6
-	return 2*math.Exp(x)/(math.Exp(x)+1) - 1
-}
-
 func main() {
 	//height := 1440*2
 	//width := int(height*16.0/9.0) + 2*int(height*4.0/5.0)
 	width := 1920
 	height := 1080
-	darkPerPoint := uint16(256)
-	nPtsPerX := 32
+	darkPerPoint := uint16(8)
+	nPts := 32
 	nPreIter := 200
-	nIter := 500
-	exponent := 1 / 5.0
+	nIter := 5000000
+	deltaTime := 0.0001
 
-	//rMin := 3.0
-	// do the full range, and then squish it sideways later
-	rMin := 1.0
-	// rMin := 3.54409
-	rMax := 4.0
+	scale := g.Vec2{
+		X: 3.0,
+		Y: 1.5,
+	}
 
-	_ = exponent
+	a := 15.446
+	b := 28.0
+	c := -0.714
+	d := -1.143
+	//a := 15.6
+	//b := 28.0
+	//c := -0.714
+	//d := -1.143
 
 	nProcs := runtime.GOMAXPROCS(-1)
-	nPtsPerXPerProc := nPtsPerX / nProcs
+	nPtsPerProc := nPts / nProcs
 	buffers := make([]Slice2D.Uint16Slice2D, nProcs)
 	for i := 0; i < len(buffers); i++ {
 		buffers[i] = Slice2D.NewUint16Slice2D(width, height)
 	}
 
+	bound_width := 10.0
+	bounds := [4]g.Float{
+		// a little extra space around the rose
+		-bound_width, bound_width,
+		-bound_width, bound_width,
+		//-bound_width * 9.0 / 16.0, bound_width * 9.0 / 16.0,
+	}
+
 	println("iterate points")
-	iterateBar := pb.StartNew(nProcs * width)
+	iterateBar := pb.StartNew(nPts)
 	parallel.ParallelFor(0, nProcs, func(workerIndex int) {
 		counts := buffers[workerIndex]
+
 		addPixel := func(i, j int, ammount uint16) {
 			if i >= width || j >= height || i < 0 || j < 0 {
 				return
@@ -75,31 +82,37 @@ func main() {
 			counts.Set(i, j, v)
 		}
 
-		for i := 0; i < width; i++ {
+		for i := 0; i < nPtsPerProc; i++ {
+			pt := g.Vec3{
+				//X: 0.7,
+				//Y: 0,
+				//Z: 0,
+				X: rand.Float64(),
+				Y: rand.Float64(),
+				Z: rand.Float64(),
+			}
 
-			for j := 0; j < nPtsPerXPerProc; j++ {
-				t := float64(i)/float64(width) + (rand.Float64()-0.5)/float64(width)
-				// find r
-				r := g.Lerp(rMin, rMax, math.Pow(t, exponent))
-				// r := g.Lerp(rMin, rMax, sigmoid_squish(t))
-				// r := g.Lerp(rMin, rMax, t)
+			//println(pt.String())
+			for i := 0; i < nPreIter; i++ {
+				dt := chua_circuit(a, b, c, d, pt)
+				pt = pt.AddV(dt.MulS(deltaTime))
+			}
+			//println(pt.String())
 
-				// locate point
-				x_init := float64(j)/float64(nPtsPerXPerProc) + (rand.Float64()-0.5)/float64(nPtsPerXPerProc)
+			// iterate the point the rest of the time
+			for j := 0; j < nIter; j++ {
+				dt := chua_circuit(a, b, c, d, pt)
+				pt = pt.AddV(dt.MulS(deltaTime))
+				//pt2 := g.Vec2{pt.X, pt.Y}
+				pt2 := g.Vec2{pt.X, pt.Z}.MulV(scale)
+				x, y := g.WindowTransformPoint(width, height, pt2, bounds)
 
-				// iterate the point
-				x_final := logistic_map_iter(r, x_init, nPreIter)
+				addPixel(x, height-1-y, darkPerPoint)
+				addPixel(x, height-1-y+1, darkPerPoint/2)
+				addPixel(x, height-1-y-1, darkPerPoint/2)
+				addPixel(x+1, height-1-y, darkPerPoint/2)
+				addPixel(x-1, height-1-y, darkPerPoint/2)
 
-				// iterate the point the rest of the time
-				for k := 0; k < nIter; k++ {
-					yval := int(float64(x_final) * float64(height))
-					addPixel(i, height-1-yval, darkPerPoint)
-					addPixel(i, height-1-yval+1, darkPerPoint/2)
-					addPixel(i, height-1-yval-1, darkPerPoint/2)
-					addPixel(i+1, height-1-yval, darkPerPoint/2)
-					addPixel(i-1, height-1-yval, darkPerPoint/2)
-					x_final = logistic_map(r, x_final)
-				}
 			}
 			iterateBar.Increment()
 		}

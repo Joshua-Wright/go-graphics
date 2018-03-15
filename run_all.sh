@@ -12,6 +12,8 @@ mains=(
 	sierpinski
 	spirograph
 	test_bspline
+	chua_circuit
+	logistic_map/logistic_map
 	# slow:
 	# dragon_curve_wallpaper
 )
@@ -27,7 +29,7 @@ for main in ${mains[@]}; do
 		echo "${main} failed to build" >> run_log.txt
 		continue
 	fi
-	if ! ./${main}; then
+	if ! "./$(basename ${main})"; then
 		echo "${main} failed to run"
 		echo "${main} failed to run" >> run_log.txt
 		continue
