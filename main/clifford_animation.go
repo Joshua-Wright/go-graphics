@@ -29,7 +29,6 @@ func main() {
 
 	bound_width := 3.0
 	bounds := [4]g.Float{
-		// a little extra space around the rose
 		-bound_width, bound_width,
 		-bound_width, bound_width,
 		//-bound_width * 9.0 / 16.0, bound_width * 9.0 / 16.0,

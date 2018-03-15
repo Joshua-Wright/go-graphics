@@ -40,12 +40,12 @@ func sigmoid_squish(x float64) float64 {
 func main() {
 	//height := 1440*2
 	//width := int(height*16.0/9.0) + 2*int(height*4.0/5.0)
-	width := 1920
-	height := 1080
-	darkPerPoint := uint16(256)
+	width := 1920*2
+	height := 1080*2
+	darkPerPoint := uint16(32)
 	nPtsPerX := 32
 	nPreIter := 200
-	nIter := 500
+	nIter := 8000
 	exponent := 1 / 5.0
 
 	//rMin := 3.0
