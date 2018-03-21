@@ -63,4 +63,11 @@ func main() {
 	//draw.Draw(out, out.Bounds(), blurred, image.ZP, draw.Over)
 	draw.Draw(out, out.Bounds(), img, image.ZP, draw.Over)
 	g.SaveAsPNG(out, g.ExecutableNamePng())
+	out.Close()
+
+	// open the image and make some changes
+	out2, err := file_backed_image.OpenPPM(g.ExecutableNameWithExtension("ppm"))
+	g.Die(err)
+	defer out2.Close()
+	draw.Draw(out2, image.Rect(10, 20, 100, 100), image.White, image.Pt(100, 100), draw.Over)
 }

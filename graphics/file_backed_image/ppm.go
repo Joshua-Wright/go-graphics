@@ -7,6 +7,8 @@ import (
 	"image"
 	"image/color"
 	"fmt"
+	"github.com/pkg/errors"
+	"io"
 )
 
 type PPMFile struct {
@@ -85,21 +87,56 @@ func CreatePPM(width, height int, filename string) (*PPMFile, error) {
 		return nil, err
 	}
 
-	header_size := int64(bytes1 + bytes2)
+	headerSize := int64(bytes1 + bytes2)
 
 	// allocate space in the file
 	err = syscall.Fallocate(int(file.Fd()), unix.FALLOC_FL_ZERO_RANGE,
-		header_size, header_size+int64(width*height*BYTES_PER_PIXEL))
+		headerSize, headerSize+int64(width*height*BYTES_PER_PIXEL))
 	if err != nil {
 		return nil, err
 	}
+
+	println(headerSize)
 
 	pgm := PPMFile{
 		W:          int64(width),
 		H:          int64(height),
 		Filename:   filename,
 		File:       file,
-		headerSize: header_size,
+		headerSize: headerSize,
+	}
+	return &pgm, nil
+}
+
+func OpenPPM(filename string) (*PPMFile, error) {
+	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
+	if err != nil {
+		return nil, err
+	}
+
+	// only bother to support the exact format that the create function writes
+	var width, height int64
+	n, err := fmt.Fscanf(file, "P6\n%d %d\n255\n", &width, &height)
+	if err != nil {
+		return nil, err
+	}
+	if n != 2 {
+		return nil, errors.New("failed to parse header")
+	}
+
+	headerSize, err := file.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return nil, err
+	}
+
+	println(headerSize)
+
+	pgm := PPMFile{
+		W:          int64(width),
+		H:          int64(height),
+		Filename:   filename,
+		File:       file,
+		headerSize: headerSize,
 	}
 	return &pgm, nil
 }
