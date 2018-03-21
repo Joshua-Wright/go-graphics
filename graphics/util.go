@@ -67,3 +67,15 @@ func MaxAdjacentDistance(pts []Vec2) Float {
 	}
 	return Sqrt(dmax)
 }
+
+func FileExists(filename string) bool {
+	s, err := os.Stat("/path/to/whatever")
+	switch {
+	case os.IsNotExist(err):
+		return false
+	case s.IsDir():
+		return false
+	default:
+		return true
+	}
+}

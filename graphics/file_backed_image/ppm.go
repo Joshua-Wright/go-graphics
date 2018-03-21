@@ -96,8 +96,6 @@ func CreatePPM(width, height int, filename string) (*PPMFile, error) {
 		return nil, err
 	}
 
-	println(headerSize)
-
 	pgm := PPMFile{
 		W:          int64(width),
 		H:          int64(height),
@@ -128,8 +126,6 @@ func OpenPPM(filename string) (*PPMFile, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	println(headerSize)
 
 	pgm := PPMFile{
 		W:          int64(width),
