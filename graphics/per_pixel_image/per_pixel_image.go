@@ -11,6 +11,8 @@ import (
 	"runtime"
 	"gopkg.in/cheggaaa/pb.v1"
 	"time"
+	"io"
+	"fmt"
 )
 
 type PixelFunction interface {
@@ -107,6 +109,10 @@ func PerPixelImage(pixelFunc PixelFunction, foldername string) error {
 			case <-ticker.C:
 				bar.Prefix("writing checkpoint")
 				// occassionally write doneMask to file
+				_, err := doneMaskFile.Seek(0, io.SeekStart)
+				if err != nil {
+					fmt.Println(err)
+				}
 				doneMask.WriteTo(doneMaskFile)
 				bar.Prefix("")
 

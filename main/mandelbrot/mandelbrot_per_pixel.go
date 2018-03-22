@@ -34,13 +34,9 @@ func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
 
 }
 
-func (m *Mandelbrot) Bounds() (w int, h int) {
-	return m.Width, m.Height
-}
+func (m *Mandelbrot) Bounds() (w int, h int) { return m.Width, m.Height }
 
 func main() {
-	//Height := 1440*2
-	//Width := int(Height*16.0/9.0) + 2*int(Height*4.0/5.0)
 	upscaleFactor := 15
 	width := 1920 * upscaleFactor
 	height := 1080 * upscaleFactor
