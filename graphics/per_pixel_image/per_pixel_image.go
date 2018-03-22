@@ -28,9 +28,9 @@ func pixelRowWorker(
 	pixelFunc PixelFunction,
 	jobs chan int, done chan donePixel,
 ) {
-	w, h := pixelFunc.Bounds()
-	for x := range jobs {
-		for y := 0; y < h; y++ {
+	w, _ := pixelFunc.Bounds()
+	for y := range jobs {
+		for x := 0; x < w; x++ {
 			if !doneMask.Test(uint(w*y + x)) {
 				pixel := pixelFunc.GetPixel(x, y)
 				done <- donePixel{x, y, pixel}
@@ -125,7 +125,7 @@ func PerPixelImage(pixelFunc PixelFunction, foldername string) error {
 	// queue
 	wg.Add(width*height - int(doneMask.Count()))
 	go func() {
-		for i := 0; i < width; i++ {
+		for i := 0; i < height; i++ {
 			jobs <- i
 		}
 		close(jobs)

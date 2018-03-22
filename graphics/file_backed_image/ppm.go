@@ -9,12 +9,14 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
+	"github.com/edsrzf/mmap-go"
 )
 
 type PPMFile struct {
 	W, H       int64
 	Filename   string
 	File       *os.File
+	mappedFile mmap.MMap
 	headerSize int64
 }
 
@@ -30,15 +32,9 @@ func (p *PPMFile) Set(x, y int, c color.Color) {
 	offset := p.getOffset(x, y)
 
 	rgbColor := color.RGBAModel.Convert(c).(color.RGBA)
-	var rgb = [3]byte{
-		rgbColor.R,
-		rgbColor.G,
-		rgbColor.B,
-	}
-	_, err := p.File.WriteAt(rgb[:], offset)
-	if err != nil {
-		panic(err)
-	}
+	p.mappedFile[offset+0] = rgbColor.R
+	p.mappedFile[offset+1] = rgbColor.G
+	p.mappedFile[offset+2] = rgbColor.B
 }
 
 func (p *PPMFile) ColorModel() color.Model {
@@ -51,17 +47,10 @@ func (p *PPMFile) Bounds() image.Rectangle {
 
 func (p *PPMFile) At(x, y int) color.Color {
 	offset := p.getOffset(x, y)
-
-	var rgb [3]byte
-	_, err := p.File.ReadAt(rgb[:], offset)
-	if err != nil {
-		panic(err)
-	}
-
 	return color.RGBA{
-		R: rgb[0],
-		G: rgb[1],
-		B: rgb[2],
+		R: p.mappedFile[offset+0],
+		G: p.mappedFile[offset+1],
+		B: p.mappedFile[offset+2],
 		A: 255,
 	}
 }
@@ -96,11 +85,17 @@ func CreatePPM(width, height int, filename string) (*PPMFile, error) {
 		return nil, err
 	}
 
+	mappedFile, err := mmap.Map(file, mmap.RDWR, 0)
+	if err != nil {
+		return nil, err
+	}
+
 	pgm := PPMFile{
 		W:          int64(width),
 		H:          int64(height),
 		Filename:   filename,
 		File:       file,
+		mappedFile: mappedFile,
 		headerSize: headerSize,
 	}
 	return &pgm, nil
@@ -111,6 +106,7 @@ func OpenPPM(filename string) (*PPMFile, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	// only bother to support the exact format that the create function writes
 	var width, height int64
@@ -127,11 +123,17 @@ func OpenPPM(filename string) (*PPMFile, error) {
 		return nil, err
 	}
 
+	mappedFile, err := mmap.Map(file, mmap.RDWR, 0)
+	if err != nil {
+		return nil, err
+	}
+
 	pgm := PPMFile{
 		W:          int64(width),
 		H:          int64(height),
 		Filename:   filename,
 		File:       file,
+		mappedFile: mappedFile,
 		headerSize: headerSize,
 	}
 	return &pgm, nil

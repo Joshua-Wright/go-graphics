@@ -50,6 +50,10 @@ func ExecutableFolderFileName(filename string) string {
 	return filepath.Join(ExecutableName()+"_frames", filename)
 }
 
+func ScaleToNotIncludeOne(xFromZeroToOneInclusive float64) (xFromZeroToOneExcludingOne float64) {
+	return xFromZeroToOneInclusive * math.Nextafter(1.0, 0.0)
+}
+
 func SaveAsPNG(img image.Image, filename string) {
 	file, err := os.Create(filename)
 	Die(err)

@@ -16,24 +16,20 @@ type Mandelbrot struct {
 	MaxIter       int
 	MaxVal        float64
 	Wrap          float64
-	colormap      []color.Color
 }
 
 func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
 	z := complex(0, 0)
 	c := m.TopLeft + complex(m.Dr*float64(i), m.Di*float64(j))
-	val := mandelbrot.IterateMandelbrot(z, c, 4.0, m.MaxIter)
+	val := mandelbrot.IterateMandelbrot(z, c, 1000, m.MaxIter)
 
 	if val == 0.0 {
-		return m.colormap[uint8(val)].(color.RGBA)
+		return color.RGBA{0, 0, 0, 255}
 	} else {
 		val = math.Log2(val+1) / math.Log2(m.MaxVal+1) * m.Wrap
 		val = math.Sin(val*2*math.Pi)/2.0 + 0.5
-		val = val * 255
-		if val > 255 {
-			val = 255
-		}
-		return m.colormap[uint8(val)].(color.RGBA)
+
+		return colormap.HotColormap(val)
 	}
 
 }
@@ -45,8 +41,9 @@ func (m *Mandelbrot) Bounds() (w int, h int) {
 func main() {
 	//Height := 1440*2
 	//Width := int(Height*16.0/9.0) + 2*int(Height*4.0/5.0)
-	width := 1920 * 50
-	height := 1080 * 50
+	upscaleFactor := 15
+	width := 1920 * upscaleFactor
+	height := 1080 * upscaleFactor
 	maxIter := 25600
 
 	bound_width := 2.0
@@ -62,15 +59,14 @@ func main() {
 
 	err := per_pixel_image.PerPixelImage(
 		&Mandelbrot{
-			TopLeft:  topLeft,
-			Dr:       dr,
-			Di:       di,
-			Width:    width,
-			Height:   height,
-			MaxIter:  maxIter,
-			MaxVal:   float64(maxIter),
-			Wrap:     2.0,
-			colormap: colormap.InfernoColorMap(),
+			TopLeft: topLeft,
+			Dr:      dr,
+			Di:      di,
+			Width:   width,
+			Height:  height,
+			MaxIter: maxIter,
+			MaxVal:  float64(maxIter),
+			Wrap:    2.0,
 		},
 		"mandelbrot")
 	g.Die(err)

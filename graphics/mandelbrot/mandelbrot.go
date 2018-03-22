@@ -2,7 +2,6 @@ package mandelbrot
 
 import (
 	"github.com/joshua-wright/go-graphics/Slice2D"
-	"math/cmplx"
 	"math"
 	"github.com/joshua-wright/go-graphics/parallel"
 	"gopkg.in/cheggaaa/pb.v1"
@@ -14,11 +13,21 @@ func MandelbrotPolynomial(z, c complex128) (z2 complex128) {
 }
 
 func IterateMandelbrot(z, c complex128, threshold float64, maxIter int) float64 {
+	threshold2 := threshold*threshold
 	for i := 0; i < maxIter; i++ {
 		z = MandelbrotPolynomial(z, c)
-		if cmplx.Abs(z) > threshold {
-			// smooth
-			return float64(i) - math.Log2(math.Log2(cmplx.Abs(z)+1)+1) + 4.0
+		//if cmplx.Abs(z) > threshold {
+		if real(z)*real(z)+imag(z)*imag(z) >= threshold2 {
+			// smooth code from wikipedia
+			// sqrt of inner term removed using log simplification rules.
+			log_zn := math.Log(real(z)*real(z)+imag(z)*imag(z)) / 2
+			nu := math.Log(log_zn/math.Log(2)) / math.Log(2)
+			// Rearranging the potential function.
+			// Dividing log_zn by log(2) instead of log(N = 1<<8)
+			// because we want the entire palette to range from the
+			// center to radius 2, NOT our bailout radius.
+			iteration := float64(i) + 1 - nu
+			return iteration
 		}
 	}
 	return 0.0
