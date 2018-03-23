@@ -4,7 +4,6 @@ import (
 	"os"
 	g "github.com/joshua-wright/go-graphics/graphics"
 	"github.com/willf/bitset"
-	"image/color"
 	"sync"
 	"runtime"
 	"gopkg.in/cheggaaa/pb.v1"
