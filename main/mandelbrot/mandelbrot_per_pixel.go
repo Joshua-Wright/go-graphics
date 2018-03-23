@@ -21,7 +21,7 @@ type Mandelbrot struct {
 
 func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
 	z := complex(0, 0)
-	c := m.TopLeft + complex(m.Dr*float64(i), m.Di*float64(j))
+	c := m.TopLeft + complex(m.Dr*float64(i), -m.Di*float64(j))
 	val := mandelbrot.IterateMandelbrot(z, c, 1000, m.MaxIter)
 
 	if val == 0.0 {
@@ -37,22 +37,44 @@ func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
 
 func (m *Mandelbrot) Bounds() (w int, h int) { return m.Width, m.Height }
 
+func calc_pixel_widths(x, y int, zoom float64) (float64, float64) {
+	dx := 2.0 / zoom;
+	dy := 2.0 / zoom;
+	if x > y {
+		/* widescreen image */
+		dx = float64(x) / float64(y) * dy;
+	} else if (y > x) {
+		/* portrait */
+		dy = float64(y) / float64(x) * dx;
+	} // otherwise square
+	return dx / float64(x), dy / float64(y);
+}
+
+func calc_bounds(x, y int, center complex128, zoom float64) [4]float64 {
+	dx := 2.0 / zoom;
+	dy := 2.0 / zoom;
+	if x > y {
+		/* widescreen image */
+		dx = float64(x) / float64(y) * dy;
+	} else if (y > x) {
+		/* portrait */
+		dy = float64(y) / float64(x) * dx;
+	} // otherwise square
+	return [4]float64{
+		real(center) - dx, real(center) + dx, imag(center) - dy, imag(center) + dy,
+	};
+}
+
 func main() {
 	upscaleFactor := 2
 	width := 1920 * upscaleFactor
 	height := 1080 * upscaleFactor
 	maxIter := 25600
 
-	bound_width := 2.0
-	bounds := [4]g.Float{
-		-bound_width, bound_width,
-		//-bound_width, bound_width,
-		-bound_width * 9.0 / 16.0, bound_width * 9.0 / 16.0,
-	}
-
 	cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
 
-	topLeft := complex(bounds[0], bounds[2])
+	bounds := calc_bounds(width, height, complex(-0.7435669, 0.1314023), 1344.9)
+	topLeft := complex(bounds[0], bounds[3])
 	dr := (bounds[1] - bounds[0]) / float64(width)
 	di := (bounds[3] - bounds[2]) / float64(height)
 
