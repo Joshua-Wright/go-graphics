@@ -14,7 +14,7 @@ func NewCubicEquidistantInterpolatorFromSlices(ymin, ymax float64, nPts int, ys 
 	}
 
 	var c CubicEquidistant
-	c2 := MakeCubicInterpolator(ymin, ymax, xs, ys)
+	c2 := NewCubicInterpolator(ymin, ymax, xs, ys)
 	c.ymin = c2.ymin
 	c.ymax = c2.ymax
 	c.ys = c2.ys
@@ -34,7 +34,7 @@ func NewCubicEquidistantInterpolator(ymin, ymax float64, nPts int, f func(x floa
 	}
 
 	var c CubicEquidistant
-	c2 := MakeCubicInterpolator(ymin, ymax, xs, ys)
+	c2 := NewCubicInterpolator(ymin, ymax, xs, ys)
 	c.ymin = c2.ymin
 	c.ymax = c2.ymax
 	c.ys = c2.ys

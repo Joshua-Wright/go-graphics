@@ -19,13 +19,11 @@ type PixelFunction interface {
 	Bounds() (w int64, h int64)
 }
 
-type donePixel struct {
-	X, Y int
-	Pix  color.RGBA
-}
-
 // must be multiple of 64 (word size) for bitmap to be (assumed) thread safe
 const jobSize int64 = 64 * 256
+
+//const bitmapWriteDelay = 500 * time.Millisecond
+const bitmapWriteDelay = 5 * time.Minute
 
 func pixelRowWorker(
 	doneMask *bitset.BitSet,
@@ -37,7 +35,7 @@ func pixelRowWorker(
 	size := w * h
 	for start := range jobs {
 		end := start + jobSize
-		if jobSize >= size {
+		if end >= size {
 			end = size
 		}
 		for i := start; i < end; i++ {
@@ -89,8 +87,7 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 
 	reducerQuit := make(chan struct{})
 	go func() {
-		//ticker := time.NewTicker(5 * time.Minute)
-		ticker := time.NewTicker(500 * time.Millisecond)
+		ticker := time.NewTicker(bitmapWriteDelay)
 		for {
 			select {
 			case <-ticker.C:

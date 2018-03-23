@@ -20,7 +20,7 @@ type Cubic struct {
 	ymin, ymax float64
 }
 
-func MakeCubicInterpolator(ymin, ymax float64, xs, ys []float64) *Cubic {
+func NewCubicInterpolator(ymin, ymax float64, xs, ys []float64) *Cubic {
 	var c Cubic
 	c.ymin = ymin
 	c.ymax = ymax
