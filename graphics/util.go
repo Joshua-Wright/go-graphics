@@ -73,7 +73,7 @@ func MaxAdjacentDistance(pts []Vec2) Float {
 }
 
 func FileExists(filename string) bool {
-	s, err := os.Stat("/path/to/whatever")
+	s, err := os.Stat(filename)
 	switch {
 	case os.IsNotExist(err):
 		return false

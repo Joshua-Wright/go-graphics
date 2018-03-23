@@ -24,11 +24,20 @@ func (p *PPMFile) Close() error {
 	return p.File.Close()
 }
 
-func (p *PPMFile) getOffset(x, y int) int64 {
-	return p.headerSize + 3*(p.W*int64(y)+int64(x))
+func (p *PPMFile) getOffset(x, y int64) int64 {
+	return p.headerSize + 3*(p.W*y+x)
 }
 
 func (p *PPMFile) Set(x, y int, c color.Color) {
+	offset := p.getOffset(int64(x), int64(y))
+
+	rgbColor := color.RGBAModel.Convert(c).(color.RGBA)
+	p.mappedFile[offset+0] = rgbColor.R
+	p.mappedFile[offset+1] = rgbColor.G
+	p.mappedFile[offset+2] = rgbColor.B
+}
+
+func (p *PPMFile) Set64(x, y int64, c color.Color) {
 	offset := p.getOffset(x, y)
 
 	rgbColor := color.RGBAModel.Convert(c).(color.RGBA)
@@ -46,7 +55,7 @@ func (p *PPMFile) Bounds() image.Rectangle {
 }
 
 func (p *PPMFile) At(x, y int) color.Color {
-	offset := p.getOffset(x, y)
+	offset := p.getOffset(int64(x), int64(y))
 	return color.RGBA{
 		R: p.mappedFile[offset+0],
 		G: p.mappedFile[offset+1],
@@ -58,7 +67,29 @@ func (p *PPMFile) At(x, y int) color.Color {
 // RGB format, 8 bytes per color
 const BYTES_PER_PIXEL = 3
 
-func CreatePPM(width, height int, filename string) (*PPMFile, error) {
+func OpenOrCreatePPM(width, height int64, filename string) (*PPMFile, error) {
+	img, err := OpenPPM(filename)
+	if err != nil {
+		// file doesn't exist, so create it
+		img, err = CreatePPM(width, height, filename)
+		if err != nil {
+			return nil, err
+		} else {
+			return img, nil
+		}
+	} else {
+		// file does exist, so verify it's still valid
+		if img.W != width || img.H != height {
+			return nil, errors.New(
+				fmt.Sprintf("bad width or height: file (%v, %v), requested: (%v, %v)",
+					img.W, img.H, width, height))
+		} else {
+			return img, nil
+		}
+	}
+}
+
+func CreatePPM(width, height int64, filename string) (*PPMFile, error) {
 	file, err := os.Create(filename)
 	if err != nil {
 		return nil, err
@@ -91,8 +122,8 @@ func CreatePPM(width, height int, filename string) (*PPMFile, error) {
 	}
 
 	pgm := PPMFile{
-		W:          int64(width),
-		H:          int64(height),
+		W:          width,
+		H:          height,
 		Filename:   filename,
 		File:       file,
 		mappedFile: mappedFile,

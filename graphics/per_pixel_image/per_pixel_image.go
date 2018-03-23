@@ -3,8 +3,6 @@ package per_pixel_image
 import (
 	"os"
 	g "github.com/joshua-wright/go-graphics/graphics"
-	"github.com/joshua-wright/go-graphics/graphics/file_backed_image"
-	"github.com/pkg/errors"
 	"github.com/willf/bitset"
 	"image/color"
 	"sync"
@@ -15,9 +13,10 @@ import (
 	"fmt"
 )
 
+// assumes pixel function writes its own pixels
 type PixelFunction interface {
-	GetPixel(i, j int) color.RGBA
-	Bounds() (w int, h int)
+	GetPixel(i, j int64)
+	Bounds() (w int64, h int64)
 }
 
 type donePixel struct {
@@ -25,85 +24,73 @@ type donePixel struct {
 	Pix  color.RGBA
 }
 
+// must be multiple of 64 (word size) for bitmap to be (assumed) thread safe
+const jobSize int64 = 64 * 256
+
 func pixelRowWorker(
 	doneMask *bitset.BitSet,
 	pixelFunc PixelFunction,
-	jobs chan int, done chan donePixel,
+	jobs chan int64,
+	wg *sync.WaitGroup,
 ) {
-	w, _ := pixelFunc.Bounds()
-	for y := range jobs {
-		for x := 0; x < w; x++ {
-			if !doneMask.Test(uint(w*y + x)) {
-				pixel := pixelFunc.GetPixel(x, y)
-				done <- donePixel{x, y, pixel}
+	w, h := pixelFunc.Bounds()
+	size := w * h
+	for start := range jobs {
+		end := start + jobSize
+		if jobSize >= size {
+			end = size
+		}
+		for i := start; i < end; i++ {
+			if !doneMask.Test(uint(i)) {
+				x := i % w
+				y := i / w
+				pixelFunc.GetPixel(x, y)
+				doneMask.Set(uint(i))
 			}
 		}
+		wg.Done()
 	}
 }
 
 // TODO better name
-func PerPixelImage(pixelFunc PixelFunction, foldername string) error {
+func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 	width, height := pixelFunc.Bounds()
-	// OK if folder already exists
-	os.Mkdir(foldername, 0777)
-	err := os.Chdir(foldername)
-	if err != nil {
-		return err
-	}
+	var err error
 
-	ppmFilename := foldername + ".ppm"
-	bitmapFilename := foldername + ".bitmap"
-	// TODO save/load config
-	//configFilename := foldername + ".json"
-
-	// open image file and bitset
+	// open bitset
 	var doneMask = bitset.New(uint(width * height))
 	var doneMaskFile *os.File
-	var img *file_backed_image.PPMFile
-	if g.FileExists(ppmFilename) {
-		img, err = file_backed_image.OpenPPM(ppmFilename)
-		if err != nil {
-			return err
-		}
-		// also load bitmap
-		doneMaskFile, err = os.Open(bitmapFilename)
-		if err != nil {
-			return err
-		}
-		defer doneMaskFile.Close()
-		doneMask.ReadFrom(doneMaskFile)
+	if g.FileExists(doneMaskFilename) {
+		println("resuming")
+		// load bitmap
+		doneMaskFile, err = os.Open(doneMaskFilename)
+		_, err = doneMask.ReadFrom(doneMaskFile)
 	} else {
-		img, err = file_backed_image.CreatePPM(width, height, ppmFilename)
-		if err != nil {
-			return err
-		}
-		doneMaskFile, err = os.Create(bitmapFilename)
-		if err != nil {
-			return err
-		}
+		println("starting fresh")
+		doneMaskFile, err = os.Create(doneMaskFilename)
 	}
 	if err != nil {
 		return err
 	}
-	if int(img.W) != width || int(img.H) != height {
-		return errors.New("bad previous data")
-	}
 
-	jobs := make(chan int, width)
-	donePixels := make(chan donePixel, width)
+	jobs := make(chan int64)
 	var wg sync.WaitGroup
 
 	// start workers
 	for i := 0; i < runtime.GOMAXPROCS(-1); i++ {
-		go pixelRowWorker(doneMask, pixelFunc, jobs, donePixels)
+		go pixelRowWorker(doneMask, pixelFunc, jobs, &wg)
 	}
 
-	// start reducer
-	bar := pb.StartNew(width*height - int(doneMask.Count()))
-	bar.Set(int(doneMask.Count()))
+	numPixels := width * height
+	numTasks := 1 + ((numPixels - 1) / jobSize)
+
+	// start bitmap saver
+	bar := pb.StartNew(int(numTasks))
+
 	reducerQuit := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
+		//ticker := time.NewTicker(5 * time.Minute)
+		ticker := time.NewTicker(500 * time.Millisecond)
 		for {
 			select {
 			case <-ticker.C:
@@ -115,12 +102,6 @@ func PerPixelImage(pixelFunc PixelFunction, foldername string) error {
 				}
 				doneMask.WriteTo(doneMaskFile)
 				bar.Prefix("")
-
-			case pix := <-donePixels:
-				img.Set(pix.X, pix.Y, pix.Pix)
-				doneMask.Set(uint(width*pix.Y + pix.X))
-				wg.Done()
-				bar.Increment()
 			case <-reducerQuit:
 				break
 			}
@@ -129,15 +110,18 @@ func PerPixelImage(pixelFunc PixelFunction, foldername string) error {
 	}()
 
 	// queue
-	wg.Add(width*height - int(doneMask.Count()))
-	go func() {
-		for i := 0; i < height; i++ {
-			jobs <- i
-		}
-		close(jobs)
-	}()
+
+	wg.Add(int(numTasks))
+	for i := int64(0); i < numTasks; i++ {
+		jobs <- i * jobSize
+		bar.Increment()
+	}
+	close(jobs)
 	wg.Wait()
 	reducerQuit <- struct{}{}
+
+	doneMaskFile.Close()
+	os.Remove(doneMaskFilename)
 
 	return nil
 }
