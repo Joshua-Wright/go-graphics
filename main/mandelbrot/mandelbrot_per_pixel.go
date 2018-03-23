@@ -16,6 +16,7 @@ type Mandelbrot struct {
 	MaxIter       int
 	MaxVal        float64
 	Wrap          float64
+	Cmap          *colormap.XyzInterpColormap
 }
 
 func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
@@ -29,7 +30,7 @@ func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
 		val = math.Log2(val+1) / math.Log2(m.MaxVal+1) * m.Wrap
 		val = math.Sin(val*2*math.Pi)/2.0 + 0.5
 
-		return colormap.HotColormap(val)
+		return m.Cmap.GetColor(val)
 	}
 
 }
@@ -37,7 +38,7 @@ func (m *Mandelbrot) GetPixel(i, j int) color.RGBA {
 func (m *Mandelbrot) Bounds() (w int, h int) { return m.Width, m.Height }
 
 func main() {
-	upscaleFactor := 15
+	upscaleFactor := 2
 	width := 1920 * upscaleFactor
 	height := 1080 * upscaleFactor
 	maxIter := 25600
@@ -48,6 +49,8 @@ func main() {
 		//-bound_width, bound_width,
 		-bound_width * 9.0 / 16.0, bound_width * 9.0 / 16.0,
 	}
+
+	cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
 
 	topLeft := complex(bounds[0], bounds[2])
 	dr := (bounds[1] - bounds[0]) / float64(width)
@@ -62,7 +65,8 @@ func main() {
 			Height:  height,
 			MaxIter: maxIter,
 			MaxVal:  float64(maxIter),
-			Wrap:    2.0,
+			Wrap:    4.0,
+			Cmap:    cmap,
 		},
 		"mandelbrot")
 	g.Die(err)
