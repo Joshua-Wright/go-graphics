@@ -10,7 +10,7 @@ func main() {
 	length := int64(1024*10)
 
 	func() {
-		arr, err := memory_mapped.OpenOrCreateMmapArrayFloat64(length, "test_float64_array")
+		arr, err := memory_mapped.OpenOrCreateArrayFloat64(length, "test_float64_array")
 		g.Die(err)
 
 		for i := int64(0); i < length; i++ {
@@ -20,7 +20,7 @@ func main() {
 	}()
 
 	func() {
-		arr, err := memory_mapped.OpenOrCreateMmapArrayFloat64(length, "test_float64_array")
+		arr, err := memory_mapped.OpenOrCreateArrayFloat64(length, "test_float64_array")
 		g.Die(err)
 
 		for i := int64(0); i < length; i++ {

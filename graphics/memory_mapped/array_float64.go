@@ -12,14 +12,14 @@ import (
 	"math"
 )
 
-type MmapArrayFloat64 struct {
+type ArrayFloat64 struct {
 	length     int64
 	filename   string
 	mappedFile mmap.MMap
 	headerSize uintptr
 }
 
-func (a *MmapArrayFloat64) Close() error {
+func (a *ArrayFloat64) Close() error {
 	err := a.mappedFile.Flush()
 	if err != nil {
 		return err
@@ -29,23 +29,23 @@ func (a *MmapArrayFloat64) Close() error {
 		return err
 	}
 	// reset all fields
-	*a = MmapArrayFloat64{}
+	*a = ArrayFloat64{}
 	return nil
 }
 
 const bytesPerFloat64 = 8
 
-func (a *MmapArrayFloat64) getPointerAtIndex(i int64) *float64 {
+func (a *ArrayFloat64) getPointerAtIndex(i int64) *float64 {
 	offset := a.headerSize + bytesPerFloat64*uintptr(i)
 	return (*float64)(unsafe.Pointer(&a.mappedFile[offset]))
 }
 
-func (a *MmapArrayFloat64) getOffset(i int64) int64 {
+func (a *ArrayFloat64) getOffset(i int64) int64 {
 	offset := a.headerSize + bytesPerFloat64*uintptr(i)
 	return int64(offset)
 }
 
-func (a *MmapArrayFloat64) Get(i int64) float64 {
+func (a *ArrayFloat64) Get(i int64) float64 {
 	offset := a.getOffset(i)
 	return math.Float64frombits(uint64(a.mappedFile[offset+0])<<56 |
 		uint64(a.mappedFile[offset+1])<<48 |
@@ -57,7 +57,7 @@ func (a *MmapArrayFloat64) Get(i int64) float64 {
 		uint64(a.mappedFile[offset+7])<<0)
 }
 
-func (a *MmapArrayFloat64) Set(i int64, v float64) {
+func (a *ArrayFloat64) Set(i int64, v float64) {
 	n := math.Float64bits(v)
 	offset := a.getOffset(i)
 	a.mappedFile[offset+0] = byte(n >> 56)
@@ -70,14 +70,14 @@ func (a *MmapArrayFloat64) Set(i int64, v float64) {
 	a.mappedFile[offset+7] = byte(n)
 }
 
-func (a *MmapArrayFloat64) Len() int64       { return a.length }
-func (a *MmapArrayFloat64) Filename() string { return a.filename }
+func (a *ArrayFloat64) Len() int64       { return a.length }
+func (a *ArrayFloat64) Filename() string { return a.filename }
 
-func OpenOrCreateMmapArrayFloat64(len int64, filename string) (*MmapArrayFloat64, error) {
-	arr, err := OpenMmapArrayFloat64(filename)
+func OpenOrCreateArrayFloat64(len int64, filename string) (*ArrayFloat64, error) {
+	arr, err := OpenArrayFloat64(filename)
 	if err != nil {
 		// file doesn't exist, so create it
-		arr, err = CreateMmapArrayFloat64(len, filename)
+		arr, err = CreateArrayFloat64(len, filename)
 		if err != nil {
 			return nil, err
 		} else {
@@ -93,7 +93,7 @@ func OpenOrCreateMmapArrayFloat64(len int64, filename string) (*MmapArrayFloat64
 	}
 }
 
-func CreateMmapArrayFloat64(length int64, filename string) (*MmapArrayFloat64, error) {
+func CreateArrayFloat64(length int64, filename string) (*ArrayFloat64, error) {
 	file, err := os.Create(filename)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func CreateMmapArrayFloat64(length int64, filename string) (*MmapArrayFloat64, e
 
 	// write header
 	var bytes1 int
-	if bytes1, err = fmt.Fprint(file, "float64\n%d\n", length); err != nil {
+	if bytes1, err = fmt.Fprintf(file, "float64\n%d\n", length); err != nil {
 		return nil, err
 	}
 
@@ -120,7 +120,7 @@ func CreateMmapArrayFloat64(length int64, filename string) (*MmapArrayFloat64, e
 		return nil, err
 	}
 
-	pgm := MmapArrayFloat64{
+	pgm := ArrayFloat64{
 		length:     length,
 		filename:   filename,
 		mappedFile: mappedFile,
@@ -129,7 +129,7 @@ func CreateMmapArrayFloat64(length int64, filename string) (*MmapArrayFloat64, e
 	return &pgm, nil
 }
 
-func OpenMmapArrayFloat64(filename string) (*MmapArrayFloat64, error) {
+func OpenArrayFloat64(filename string) (*ArrayFloat64, error) {
 	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func OpenMmapArrayFloat64(filename string) (*MmapArrayFloat64, error) {
 		return nil, err
 	}
 
-	pgm := MmapArrayFloat64{
+	pgm := ArrayFloat64{
 		length:     length,
 		filename:   filename,
 		mappedFile: mappedFile,
