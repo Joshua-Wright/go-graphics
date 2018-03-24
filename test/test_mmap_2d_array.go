@@ -16,7 +16,7 @@ func main() {
 
 		for j := int64(0); j < height; j++ {
 			for i := int64(0); i < width; i++ {
-				arr.Set(i, j, float64(i*j))
+				arr.Set(i, j, float64(i*j)+float64(i)*0.5)
 			}
 		}
 		arr.Close()
@@ -28,8 +28,8 @@ func main() {
 
 		for j := int64(0); j < height; j++ {
 			for i := int64(0); i < width; i++ {
-				if arr.Get(i, j) != float64(i*j) {
-					fmt.Println("failed at", i, arr.Get(i, j), float64(i*j))
+				if arr.Get(i, j) != float64(i*j)+float64(i)*0.5 {
+					fmt.Println("failed at", i, arr.Get(i, j), float64(i*j)+float64(i)*0.5)
 				}
 			}
 		}
