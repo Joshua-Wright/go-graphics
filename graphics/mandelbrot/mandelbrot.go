@@ -6,8 +6,8 @@ import (
 	"github.com/joshua-wright/go-graphics/parallel"
 	"gopkg.in/cheggaaa/pb.v1"
 	"github.com/joshua-wright/go-graphics/graphics/colormap"
-	"github.com/joshua-wright/go-graphics/graphics/file_backed_image"
 	"image/color"
+	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
 )
 
 func MandelbrotPolynomial(z, c complex128) (z2 complex128) {
@@ -86,7 +86,7 @@ type MandelbrotPerPixel struct {
 	MaxVal        float64
 	Wrap          float64
 	Cmap          colormap.ColorMap
-	OutImage      *file_backed_image.PPMFile
+	OutImage      *memory_mapped.PPMFile
 }
 
 func (m *MandelbrotPerPixel) GetPixel(i, j int64) {

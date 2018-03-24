@@ -12,7 +12,7 @@ func main() {
 	filename := os.Args[1]
 	newFilename := strings.TrimSuffix(filename, filepath.Ext(filename)) + ".png"
 
-	img, err := file_backed_image.OpenPPM(filename)
+	img, err := memory_mapped.OpenPPM(filename)
 	if err != nil {
 		panic(err)
 	}

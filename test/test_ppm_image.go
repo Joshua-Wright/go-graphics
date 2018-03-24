@@ -7,7 +7,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 	"image"
 	"image/draw"
-	"github.com/joshua-wright/go-graphics/graphics/file_backed_image"
+	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
 )
 
 func main() {
@@ -57,7 +57,7 @@ func main() {
 
 	// flatten layers
 	//out := image.NewRGBA(img.Bounds())
-	out, err := file_backed_image.CreatePPM(width, height, g.ExecutableNameWithExtension("ppm"))
+	out, err := memory_mapped.CreatePPM(int64(width), int64(height), g.ExecutableNameWithExtension("ppm"))
 	g.Die(err)
 	draw.Draw(out, out.Bounds(), image.Black, image.ZP, draw.Over)
 	//draw.Draw(out, out.Bounds(), blurred, image.ZP, draw.Over)
@@ -66,7 +66,7 @@ func main() {
 	out.Close()
 
 	// open the image and make some changes
-	out2, err := file_backed_image.OpenPPM(g.ExecutableNameWithExtension("ppm"))
+	out2, err := memory_mapped.OpenPPM(g.ExecutableNameWithExtension("ppm"))
 	g.Die(err)
 	defer out2.Close()
 	draw.Draw(out2, image.Rect(10, 20, 100, 100), image.White, image.Pt(100, 100), draw.Over)

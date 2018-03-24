@@ -1,4 +1,4 @@
-package file_backed_image
+package memory_mapped
 
 import (
 	"os"

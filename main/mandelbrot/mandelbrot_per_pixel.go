@@ -36,7 +36,7 @@ func main() {
 	//bounds := MandelbrotBounds(width, height, complex(-0.7435669, 0.1314023), 1344.9)
 	topLeft, dr, di := mandelbrot.MandelbrotBounds(width, height, complex(-0.743643900055, 0.131825890901), 62407000*1.1)
 
-	outImage, err := file_backed_image.OpenOrCreatePPM(width, height, "mandelbrot.ppm")
+	outImage, err := memory_mapped.OpenOrCreatePPM(width, height, "mandelbrot.ppm")
 	g.Die(err)
 
 	err = per_pixel_image.PerPixelImage(
