@@ -87,6 +87,7 @@ type MandelbrotPerPixel struct {
 	Wrap          float64
 	Cmap          colormap.ColorMap
 	OutImage      *memory_mapped.PPMFile
+	OutIter       *memory_mapped.Array2dFloat64
 }
 
 func (m *MandelbrotPerPixel) GetPixel(i, j int64) {
@@ -94,14 +95,19 @@ func (m *MandelbrotPerPixel) GetPixel(i, j int64) {
 	c := m.TopLeft + complex(m.Dr*float64(i), -m.Di*float64(j))
 	val := IterateMandelbrot(z, c, 1000, m.MaxIter)
 
-	if val == 0.0 {
-		m.OutImage.Set64(i, j, color.RGBA{0, 0, 0, 255})
-		return
-	} else {
-		val = math.Log2(val+1) / math.Log2(m.MaxVal+1) * m.Wrap
-		val = math.Sin(val*2*math.Pi)/2.0 + 0.5
+	if m.OutIter != nil {
+		m.OutIter.Set(i, j, val)
+	}
 
-		m.OutImage.Set64(i, j, m.Cmap.GetColor(val))
+	if m.OutImage != nil {
+		if val == 0.0 {
+			m.OutImage.Set64(i, j, color.RGBA{0, 0, 0, 255})
+			return
+		} else {
+			val = math.Log2(val+1) / math.Log2(m.MaxVal+1) * m.Wrap
+			val = math.Sin(val*2*math.Pi)/2.0 + 0.5
+			m.OutImage.Set64(i, j, m.Cmap.GetColor(val))
+		}
 	}
 
 }

@@ -64,6 +64,13 @@ func (p *PPMFile) At(x, y int) color.Color {
 	}
 }
 
+func (p *PPMFile) At64(x, y int64) (r, g, b uint8) {
+	offset := p.getOffset(x, y)
+	return p.mappedFile[offset+0],
+		p.mappedFile[offset+1],
+		p.mappedFile[offset+2]
+}
+
 // RGB format, 8 bytes per color
 const BYTES_PER_PIXEL = 3
 

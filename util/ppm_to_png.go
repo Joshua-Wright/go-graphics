@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/joshua-wright/go-graphics/graphics/file_backed_image"
 	"os"
 	"strings"
 	"path/filepath"
 	"image/png"
+	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
 )
 
 func main() {

@@ -39,6 +39,9 @@ func main() {
 	outImage, err := memory_mapped.OpenOrCreatePPM(width, height, "mandelbrot.ppm")
 	g.Die(err)
 
+	outIter, err := memory_mapped.OpenOrCreateMmap2dArrayFloat64(width, height, "mandelbrot.iter")
+	g.Die(err)
+
 	err = per_pixel_image.PerPixelImage(
 		&mandelbrot.MandelbrotPerPixel{
 			TopLeft:  topLeft,
@@ -51,6 +54,7 @@ func main() {
 			Wrap:     wrap,
 			Cmap:     cmap,
 			OutImage: outImage,
+			OutIter:  outIter,
 		},
 		"mandelbrot.bitmap")
 	g.Die(err)
