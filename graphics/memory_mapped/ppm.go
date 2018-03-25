@@ -111,7 +111,7 @@ func CreatePPM(width, height int64, filename string) (*PPMFile, error) {
 
 	// allocate space in the file
 	err = syscall.Fallocate(int(file.Fd()), unix.FALLOC_FL_ZERO_RANGE,
-		headerSize, headerSize+int64(width*height*BYTES_PER_PIXEL))
+		headerSize, int64(width*height*BYTES_PER_PIXEL))
 	if err != nil {
 		return nil, err
 	}

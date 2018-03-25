@@ -4,8 +4,8 @@ import (
 	g "github.com/joshua-wright/go-graphics/graphics"
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot"
 	"github.com/joshua-wright/go-graphics/graphics/per_pixel_image"
-	"github.com/joshua-wright/go-graphics/graphics/file_backed_image"
 	"github.com/joshua-wright/go-graphics/graphics/colormap"
+	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
 )
 
 func main() {
@@ -29,9 +29,9 @@ func main() {
 	//}
 	//cmap := colormap.NewInterpColormap(cs)
 	//cmap := Hsv{}
-	cmap := colormap.Sinebow{}
+	//cmap := colormap.Sinebow{}
 
-	//cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
+	cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
 	//cmap := colormap.NewInterpColormap(colormap.UltraFractalColors16)
 	//bounds := MandelbrotBounds(width, height, complex(-0.7435669, 0.1314023), 1344.9)
 	topLeft, dr, di := mandelbrot.MandelbrotBounds(width, height, complex(-0.743643900055, 0.131825890901), 62407000*1.1)

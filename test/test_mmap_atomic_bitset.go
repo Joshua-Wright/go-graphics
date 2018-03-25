@@ -11,7 +11,7 @@ import (
 func main() {
 	length := int64(1024 * 10)
 
-	modm := int64(1234)
+	modm := int64(13)
 
 	procs := runtime.GOMAXPROCS(-1)
 

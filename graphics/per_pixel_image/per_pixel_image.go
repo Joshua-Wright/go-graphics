@@ -2,14 +2,10 @@ package per_pixel_image
 
 import (
 	"os"
-	g "github.com/joshua-wright/go-graphics/graphics"
-	"github.com/willf/bitset"
 	"sync"
 	"runtime"
 	"gopkg.in/cheggaaa/pb.v1"
-	"time"
-	"io"
-	"fmt"
+	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
 )
 
 // assumes pixel function writes its own pixels
@@ -18,14 +14,10 @@ type PixelFunction interface {
 	Bounds() (w int64, h int64)
 }
 
-// must be multiple of 64 (word size) for bitmap to be (assumed) thread safe
-const jobSize int64 = 64 * 256
-
-//const bitmapWriteDelay = 500 * time.Millisecond
-const bitmapWriteDelay = 5 * time.Minute
+const jobSize int64 = 64 * 1024
 
 func pixelRowWorker(
-	doneMask *bitset.BitSet,
+	doneMask *memory_mapped.AtomicBitset,
 	pixelFunc PixelFunction,
 	jobs chan int64,
 	wg *sync.WaitGroup,
@@ -38,11 +30,11 @@ func pixelRowWorker(
 			end = size
 		}
 		for i := start; i < end; i++ {
-			if !doneMask.Test(uint(i)) {
+			if !doneMask.Test(i) {
 				x := i % w
 				y := i / w
 				pixelFunc.GetPixel(x, y)
-				doneMask.Set(uint(i))
+				doneMask.Set(i)
 			}
 		}
 		wg.Done()
@@ -52,20 +44,12 @@ func pixelRowWorker(
 // TODO better name
 func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 	width, height := pixelFunc.Bounds()
+	numPixels := width * height
+
 	var err error
 
 	// open bitset
-	var doneMask = bitset.New(uint(width * height))
-	var doneMaskFile *os.File
-	if g.FileExists(doneMaskFilename) {
-		println("resuming")
-		// load bitmap
-		doneMaskFile, err = os.Open(doneMaskFilename)
-		_, err = doneMask.ReadFrom(doneMaskFile)
-	} else {
-		println("starting fresh")
-		doneMaskFile, err = os.Create(doneMaskFilename)
-	}
+	doneMask, err := memory_mapped.OpenOrCreateAtomicBitset(numPixels, doneMaskFilename)
 	if err != nil {
 		return err
 	}
@@ -78,35 +62,12 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 		go pixelRowWorker(doneMask, pixelFunc, jobs, &wg)
 	}
 
-	numPixels := width * height
 	numTasks := 1 + ((numPixels - 1) / jobSize)
 
-	// start bitmap saver
+	// start progress bar
 	bar := pb.StartNew(int(numTasks))
 
-	reducerQuit := make(chan struct{})
-	go func() {
-		ticker := time.NewTicker(bitmapWriteDelay)
-		for {
-			select {
-			case <-ticker.C:
-				bar.Prefix("writing checkpoint")
-				// occassionally write doneMask to file
-				_, err := doneMaskFile.Seek(0, io.SeekStart)
-				if err != nil {
-					fmt.Println(err)
-				}
-				doneMask.WriteTo(doneMaskFile)
-				bar.Prefix("")
-			case <-reducerQuit:
-				break
-			}
-		}
-		bar.Finish()
-	}()
-
 	// queue
-
 	wg.Add(int(numTasks))
 	for i := int64(0); i < numTasks; i++ {
 		jobs <- i * jobSize
@@ -114,10 +75,7 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 	}
 	close(jobs)
 	wg.Wait()
-	reducerQuit <- struct{}{}
 
-	doneMaskFile.Close()
 	os.Remove(doneMaskFilename)
-
 	return nil
 }

@@ -40,26 +40,26 @@ func (b *AtomicBitset) Len() int64       { return b.length }
 func (b *AtomicBitset) Filename() string { return b.filename }
 
 func (b *AtomicBitset) getPointerAtIndex(i int64) *uint64 {
-	//offset := bytesPerUInt64 * uintptr(i>>log2WordSize)
-	offset := uintptr(i / 8)
+	offset := uintptr((i >> log2WordSize) << 3)
 	return (*uint64)(unsafe.Pointer(&b.mappedFile[offset]))
 }
 
 func (b *AtomicBitset) Test(i_ int64) bool {
 	if i_ >= b.length {
-		return false
+		panic("out of bounds")
 	}
 	addr := b.getPointerAtIndex(i_)
 	i := uint64(i_)
-	return (*addr & (1 << (i & (bitsPerUInt64 - 1))) ) != 0
+	word := atomic.LoadUint64(addr)
+	return (word & (1 << (i & (bitsPerUInt64 - 1))) ) != 0
 }
 
 func (b *AtomicBitset) Set(i_ int64) {
 	addr := b.getPointerAtIndex(i_)
 	i := uint64(i_)
 	for {
-		oldWord := *addr
-		newWord := oldWord | 1<<(i&(bitsPerUInt64-1))
+		oldWord := atomic.LoadUint64(addr)
+		newWord := oldWord | (1 << (i & (bitsPerUInt64 - 1)))
 		if atomic.CompareAndSwapUint64(addr, oldWord, newWord) {
 			return
 		}
@@ -70,7 +70,7 @@ func (b *AtomicBitset) Clear(i_ int64) {
 	addr := b.getPointerAtIndex(i_)
 	i := uint64(i_)
 	for {
-		oldWord := *addr
+		oldWord := atomic.LoadUint64(addr)
 		newWord := oldWord &^ 1 << (i & (bitsPerUInt64 - 1))
 		if atomic.CompareAndSwapUint64(addr, oldWord, newWord) {
 			return
