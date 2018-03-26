@@ -19,11 +19,12 @@ type AtomicBitset struct {
 }
 
 func (b *AtomicBitset) Close() error {
-	err := b.mappedFile.Flush()
-	if err != nil {
-		return err
-	}
-	err = b.mappedFile.Unmap()
+	// don't bother flushing, the kernel will take care of it eventually
+	//err := a.mappedFile.Flush()
+	//if err != nil {
+	//	return err
+	//}
+	err := b.mappedFile.Unmap()
 	if err != nil {
 		return err
 	}

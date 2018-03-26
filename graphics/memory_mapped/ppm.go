@@ -21,6 +21,14 @@ type PPMFile struct {
 }
 
 func (p *PPMFile) Close() error {
+	p.mappedFile.Unmap()
+	err := p.mappedFile.Unmap()
+	if err != nil {
+		return err
+	}
+	// reset all fields
+	*p = PPMFile{}
+	return nil
 	return p.File.Close()
 }
 

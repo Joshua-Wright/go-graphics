@@ -20,11 +20,12 @@ type ArrayFloat64 struct {
 }
 
 func (a *ArrayFloat64) Close() error {
-	err := a.mappedFile.Flush()
-	if err != nil {
-		return err
-	}
-	err = a.mappedFile.Unmap()
+	// don't bother flushing, the kernel will take care of it eventually
+	//err := a.mappedFile.Flush()
+	//if err != nil {
+	//	return err
+	//}
+	err := a.mappedFile.Unmap()
 	if err != nil {
 		return err
 	}

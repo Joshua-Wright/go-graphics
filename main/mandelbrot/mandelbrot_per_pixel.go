@@ -34,7 +34,7 @@ func main() {
 	cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
 	//cmap := colormap.NewInterpColormap(colormap.UltraFractalColors16)
 	//bounds := MandelbrotBounds(width, height, complex(-0.7435669, 0.1314023), 1344.9)
-	topLeft, dr, di := mandelbrot.MandelbrotBounds(width, height, complex(-0.743643900055, 0.131825890901), 62407000*1.1)
+	topLeft, dr, di := mandelbrot.MandelbrotBounds(width, height, complex(-0.74364085, 0.13182733), 25497*1.1)
 
 	outImage, err := memory_mapped.OpenOrCreatePPM(width, height, "mandelbrot.ppm")
 	g.Die(err)
