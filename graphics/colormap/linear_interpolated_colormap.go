@@ -4,6 +4,7 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/interpolation"
 	"image/color"
 	"github.com/lucasb-eyer/go-colorful"
+	"math"
 )
 
 type XyzInterpColormap struct {
@@ -23,9 +24,9 @@ func NewXyzInterpColormap(colors []color.Color) *XyzInterpColormap {
 	}
 
 	icm := XyzInterpColormap{}
-	icm.x = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, 1, nPts, xs)
-	icm.y = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, 1, nPts, ys)
-	icm.z = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, 1, nPts, zs)
+	icm.x = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, math.Nextafter(1.0, 0.0), nPts, xs)
+	icm.y = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, math.Nextafter(1.0, 0.0), nPts, ys)
+	icm.z = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, math.Nextafter(1.0, 0.0), nPts, zs)
 	return &icm
 }
 

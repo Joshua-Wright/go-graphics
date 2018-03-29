@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	upscaleFactor := int64(2)
-	width := 1920 * upscaleFactor
-	height := 1080 * upscaleFactor
+	upscaleFactor := int64(4)
+	width := 2560 * upscaleFactor
+	height := 1440 * upscaleFactor
 	maxIter := int64(25600)
 	wrap := 8.0
 

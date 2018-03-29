@@ -3,6 +3,7 @@ package colormap
 import (
 	"github.com/joshua-wright/go-graphics/graphics/interpolation"
 	"image/color"
+	math "math"
 )
 
 type InterpColormap struct {
@@ -22,9 +23,9 @@ func NewInterpColormap(colors []color.Color) *InterpColormap {
 	}
 
 	icm := InterpColormap{}
-	icm.r = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, 1, nPts, rs)
-	icm.g = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, 1, nPts, gs)
-	icm.b = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, 1, nPts, bs)
+	icm.r = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, math.Nextafter(1.0, 0.0), nPts, rs)
+	icm.g = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, math.Nextafter(1.0, 0.0), nPts, gs)
+	icm.b = interpolation.NewCubicEquidistantInterpolatorFromSlices(0, math.Nextafter(1.0, 0.0), nPts, bs)
 	return &icm
 }
 

@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"image/png"
 	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
-	"strconv"
 	g "github.com/joshua-wright/go-graphics/graphics"
 	"image/color"
 	"image"
@@ -71,8 +70,9 @@ func main() {
 	iterations, err := memory_mapped.OpenMmap2dArrayFloat64(filename)
 	g.Die(err)
 
-	factor, err := strconv.Atoi(os.Args[2])
-	g.Die(err)
+	//factor, err := strconv.Atoi(os.Args[2])
+	//g.Die(err)
+	factor := 2
 
 	if iterations.Width()%int64(factor) != 0 {
 		panic("bad width")

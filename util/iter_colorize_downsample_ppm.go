@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	factor := int64(2)
+	factor := int64(4)
 
 	filename := "mandelbrot.iter"
 	newFilename := strings.TrimSuffix(filename, filepath.Ext(filename)) + "_downsampled.ppm"
@@ -37,8 +37,8 @@ func main() {
 	cmap := colormap.NewInterpColormap(colormap.JetColorMap())
 
 	MaxVal := 2560.0
-	Wrap := 4.0
-	gamma := 1.0
+	Wrap := 8.0
+	gamma := 1.5
 
 	bar := pb.New64(height2)
 	bar.Start()
@@ -59,6 +59,8 @@ func main() {
 					var c color.RGBA
 					if val != 0.0 {
 						val = math.Log2(val+1) / math.Log2(MaxVal+1) * Wrap
+						//val = math.Log(100*val + 1)
+						//val = math.Sqrt(val * Wrap)
 						val = math.Sin(val*2*math.Pi)/2.0 + 0.5
 						c = cmap.GetColor(val)
 					}
