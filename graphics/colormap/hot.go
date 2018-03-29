@@ -2,10 +2,17 @@ package colormap
 
 import "image/color"
 
-func HotColormap(x float64) color.RGBA {
+type HotColormap struct{}
+
+func (HotColormap) GetColor(x float64) color.RGBA {
+	return HotColormapFunc(x)
+}
+
+func HotColormapFunc(x float64) color.RGBA {
 	/* expects 0 <= x <= 1 */
 	d := x * 255.0;
 	pix := color.RGBA{};
+	pix.A = 255;
 	/* red */
 	if (d > 94) {
 		pix.R = 0xff;

@@ -30,7 +30,6 @@ var UltraFractalColors16 = []color.Color{
 	color.RGBA{106, 52, 3, 255},
 }
 
-
 type Hsv struct{}
 
 func (Hsv) GetColor(x float64) color.RGBA {
@@ -46,6 +45,7 @@ func (Hsv) GetColor(x float64) color.RGBA {
 type Sinebow struct{}
 
 func (Sinebow) GetColor(h float64) color.RGBA {
+	h = -(h+1.0/2.0)
 	r := math.Sin(math.Pi * h)
 	g := math.Sin(math.Pi * (h + 1.0/3.0))
 	b := math.Sin(math.Pi * (h + 2.0/3.0))
