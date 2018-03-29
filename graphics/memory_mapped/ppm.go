@@ -54,6 +54,14 @@ func (p *PPMFile) Set64(x, y int64, c color.Color) {
 	p.mappedFile[offset+2] = rgbColor.B
 }
 
+func (p *PPMFile) Set64RGB(x, y int64, r, g, b uint8) {
+	offset := p.getOffset(x, y)
+
+	p.mappedFile[offset+0] = r
+	p.mappedFile[offset+1] = g
+	p.mappedFile[offset+2] = b
+}
+
 func (p *PPMFile) ColorModel() color.Model {
 	return color.RGBAModel
 }

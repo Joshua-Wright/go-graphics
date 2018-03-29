@@ -65,7 +65,8 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 	numTasks := 1 + ((numPixels - 1) / jobSize)
 
 	// start progress bar
-	bar := pb.StartNew(int(numTasks))
+	bar := pb.New64(numTasks)
+	bar.Start()
 
 	// queue
 	wg.Add(int(numTasks))
