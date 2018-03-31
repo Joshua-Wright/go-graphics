@@ -69,6 +69,11 @@ func (p *PPMFile) ColorModel() color.Model {
 	return color.RGBAModel
 }
 
+// if we tell the PNG encoder that we are opaque, it will traverse the image exactly once
+func (*PPMFile) Opaque() bool {
+	return true
+}
+
 func (p *PPMFile) Bounds() image.Rectangle {
 	return image.Rect(0, 0, int(p.W), int(p.H))
 }

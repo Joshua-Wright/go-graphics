@@ -64,7 +64,7 @@ func (p *StreamingWorkPool) workerManager() {
 	}
 
 	// cache maps starting index to work item chunk
-	cache := make(map[int64]workItemChunk)
+	cache := make(map[int64]workItemChunk, p.maxCacheSize)
 	waitingFor := int64(-1)
 	for {
 		select {
@@ -91,6 +91,11 @@ func (p *StreamingWorkPool) workerManager() {
 			}
 			numRunningWorkers--
 
+		}
+
+		if int64(len(cache)) == p.maxCacheSize && numRunningWorkers < maxNumRunningWorkers/2 {
+			// clear the cache if we're getting bogged down
+			cache = make(map[int64]workItemChunk, p.maxCacheSize)
 		}
 
 		// start more workers if necessary

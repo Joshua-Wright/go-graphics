@@ -1,4 +1,4 @@
-package main
+package dragon_curve
 
 import (
 	m "github.com/joshua-wright/go-graphics/graphics"
