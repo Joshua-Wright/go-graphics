@@ -14,11 +14,12 @@ func main() {
 		colormap.NewXyzInterpColormap(colormap.InfernoColorMap()),
 		colormap.NewInterpColormap(colormap.JetColorMap()),
 		colormap.NewXyzInterpColormap(colormap.JetColorMap()),
-		colormap.HotColormap{},
-		colormap.Hsv{},
-		colormap.Sinebow{},
 		colormap.NewInterpColormap(colormap.UltraFractalColors16),
 		colormap.NewXyzInterpColormap(colormap.UltraFractalColors16),
+		colormap.HotColormap,
+		colormap.Hsv,
+		colormap.Sinebow,
+		colormap.DefaultCosine3D,
 	}
 
 	width := 2560

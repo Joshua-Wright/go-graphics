@@ -2,9 +2,11 @@ package colormap
 
 import "image/color"
 
-type HotColormap struct{}
+var HotColormap = hotColormap{}
 
-func (HotColormap) GetColor(x float64) color.RGBA {
+type hotColormap struct{}
+
+func (hotColormap) GetColor(x float64) color.RGBA {
 	return HotColormapFunc(x)
 }
 
