@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	upscaleFactor := int64(4)
+	upscaleFactor := int64(8)
 	width := 2560 * upscaleFactor
 	height := 1440 * upscaleFactor
 	maxIter := int64(25600)
