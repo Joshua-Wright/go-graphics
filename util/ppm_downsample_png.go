@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"image/png"
 	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
-	"strconv"
 	g "github.com/joshua-wright/go-graphics/graphics"
 	"image/color"
 	"image"
 	"runtime"
+	"strconv"
 )
 
 const bufferSize = 10240
@@ -21,8 +21,9 @@ type pixelMsg struct {
 }
 
 type downsampledPpm struct {
-	width, height int64
-	pixels        chan pixelMsg
+	outWidth, outHeight  int64
+	pixelRequest         chan int64
+	pixelRequestResponse chan color.Color
 }
 
 func (img *downsampledPpm) ColorModel() color.Model {
@@ -30,25 +31,21 @@ func (img *downsampledPpm) ColorModel() color.Model {
 }
 
 func (img *downsampledPpm) Bounds() image.Rectangle {
-	return image.Rect(0, 0, int(img.width), int(img.height))
+	return image.Rect(0, 0, int(img.outWidth), int(img.outHeight))
 }
 
 func (img *downsampledPpm) At(x_, y_ int) color.Color {
 	x := int64(x_)
 	y := int64(y_)
-	px := <-img.pixels
-	if px.index != y*img.width+x {
-		panic("bad pixel order access")
-	}
-	//if x == 0 {
-	//	println(x, y, px.index)
-	//}
-	return px.c
+	idx := y*img.outWidth + x
+	img.pixelRequest <- idx
+	return <-img.pixelRequestResponse
 }
 
 func DownsamplePixel(ppm *memory_mapped.PPMFile, index, factor int64, out chan pixelMsg) {
-	x := (index % ppm.W) * factor
-	y := (index / ppm.W) * factor
+	w := ppm.W / factor
+	x := (index % w) * factor
+	y := (index / w) * factor
 
 	var rs float64
 	var gs float64
@@ -79,55 +76,68 @@ func DownsamplePixel(ppm *memory_mapped.PPMFile, index, factor int64, out chan p
 func (img *downsampledPpm) worker(ppm *memory_mapped.PPMFile, factor int64) {
 	unsortedPixels := make(chan pixelMsg, bufferSize)
 
-	lastIndex := int64(runtime.GOMAXPROCS(-1))
-	nextSortedIndex := int64(0)
+	maxCacheSize := 1024 * 10
+	nextIndex := int64(0)
+	maxIndex := img.outWidth * img.outHeight
+	numRunningWorkers := 0
+	maxNumRunningWorkers := runtime.GOMAXPROCS(-1)
+
+	println("maxIndex ", maxIndex)
 
 	// start initial workers
-	for i := int64(0); i < lastIndex; i++ {
-		go DownsamplePixel(ppm, i, factor, unsortedPixels)
+	for i := int64(0); i < nextIndex; i++ {
+		go DownsamplePixel(ppm, nextIndex, factor, unsortedPixels)
+		numRunningWorkers++
+		nextIndex++
 	}
 
 	cache := make(map[int64]color.Color)
+	waitingFor := int64(-1)
+	for {
+		select {
 
-	for px := range unsortedPixels {
-		// if we're ready for this, send it
-		if px.index == nextSortedIndex {
-			img.pixels <- px
-			nextSortedIndex++
-			// start next pixel
-			if lastIndex < ppm.W * ppm.H {
-				go DownsamplePixel(ppm, lastIndex, factor, unsortedPixels)
-				lastIndex++
+		case reqIdx := <-img.pixelRequest:
+			if px, ok := cache[reqIdx]; ok {
+				delete(cache, reqIdx)
+				img.pixelRequestResponse <- px
+			} else {
+				waitingFor = reqIdx
+				// start a new runner for this, possibly creating too many runners and possibly doing extra work
+				go DownsamplePixel(ppm, reqIdx, factor, unsortedPixels)
+				numRunningWorkers++
+				nextIndex = reqIdx + 1
 			}
 
-			// check what else we can send also
-			for {
-				if px2, ok := cache[nextSortedIndex]; ok {
-					delete(cache, nextSortedIndex)
-					img.pixels <- pixelMsg{nextSortedIndex, px2}
-					nextSortedIndex++
-					if lastIndex < ppm.W * ppm.H {
-						go DownsamplePixel(ppm, lastIndex, factor, unsortedPixels)
-						lastIndex++
-					}
-				} else {
-					break
-				}
+		case pxMsg := <-unsortedPixels:
+			if pxMsg.index == waitingFor {
+				// if we're waiting for it, send it directly
+				img.pixelRequestResponse <- pxMsg.c
+				waitingFor = -1 // probably overkill
+			} else {
+				cache[pxMsg.index] = pxMsg.c
 			}
-		} else {
-			// otherwise put it in the cache
-			cache[px.index] = px.c
+			numRunningWorkers--
+
 		}
+
+		// start more workers if necessary
+		if len(cache) < maxCacheSize && numRunningWorkers < maxNumRunningWorkers && nextIndex < maxIndex {
+			for i := 0; i < (maxNumRunningWorkers - numRunningWorkers); i++ {
+				go DownsamplePixel(ppm, nextIndex, factor, unsortedPixels)
+				numRunningWorkers++
+				nextIndex++
+			}
+		}
+
 	}
 }
 
 func MakeDownsampler(ppm *memory_mapped.PPMFile, factor int64) *downsampledPpm {
-	pixels := make(chan pixelMsg, bufferSize)
-
 	out := downsampledPpm{
-		width:  ppm.W,
-		height: ppm.H,
-		pixels: pixels,
+		outWidth:             ppm.W / factor,
+		outHeight:            ppm.H / factor,
+		pixelRequest:         make(chan int64),
+		pixelRequestResponse: make(chan color.Color),
 	}
 
 	go out.worker(ppm, factor)
@@ -137,12 +147,15 @@ func MakeDownsampler(ppm *memory_mapped.PPMFile, factor int64) *downsampledPpm {
 
 func main() {
 	filename := os.Args[1]
+	factor, err := strconv.Atoi(os.Args[2])
+	g.Die(err)
+	//filename := "/home/j0sh/Documents/code/go-graphics/src/github.com/joshua-wright/go-graphics/util/mandelbrot.ppm"
+	//factor := 10
+	//runtime.GOMAXPROCS(1)
+
 	newFilename := strings.TrimSuffix(filename, filepath.Ext(filename)) + ".png"
 
 	ppmImage, err := memory_mapped.OpenPPM(filename)
-	g.Die(err)
-
-	factor, err := strconv.Atoi(os.Args[2])
 	g.Die(err)
 
 	if ppmImage.W%int64(factor) != 0 {

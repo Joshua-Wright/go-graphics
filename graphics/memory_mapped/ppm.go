@@ -33,6 +33,9 @@ func (p *PPMFile) Close() error {
 }
 
 func (p *PPMFile) getOffset(x, y int64) int64 {
+	if x < 0 || y < 0 || x >= p.W || y >= p.H {
+		panic(fmt.Sprintf("(%v,%v) out of image bounds (%v,%v)", x, y, p.W, p.H))
+	}
 	return p.headerSize + 3*(p.W*y+x)
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/colormap"
 	"image/color"
 	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
+	"math/cmplx"
 )
 
 func MandelbrotPolynomial(z, c complex128) (z2 complex128) {
@@ -34,6 +35,34 @@ func IterateMandelbrot(z, c complex128, threshold float64, maxIter int64) float6
 		}
 	}
 	return 0.0
+}
+
+func IterateMandelbrotDistanceEst(z, c complex128, threshold float64, maxIter int64) (iter, dist float64) {
+	threshold2 := threshold * threshold
+	dz := complex(0.0, 0.0)
+
+	for i := int64(0); i < maxIter; i++ {
+		z, dz = z*z+c, 2*z*dz+1
+
+		if real(z)*real(z)+imag(z)*imag(z) >= threshold2 {
+			// smooth code from wikipedia
+			// sqrt of inner term removed using log simplification rules.
+			log_zn := math.Log(real(z)*real(z)+imag(z)*imag(z)) / 2
+			nu := math.Log(log_zn/math.Log(2)) / math.Log(2)
+			// Rearranging the potential function.
+			// Dividing log_zn by log(2) instead of log(N = 1<<8)
+			// because we want the entire palette to range from the
+			// center to radius 2, NOT our bailout radius.
+			iteration := float64(i) + 1 - nu
+
+			zmag := cmplx.Abs(z)
+			dzmag := cmplx.Abs(dz)
+			return iteration, math.Log(zmag*zmag) * zmag / dzmag
+		}
+	}
+	zmag := cmplx.Abs(z)
+	dzmag := cmplx.Abs(dz)
+	return 0.0, math.Log(zmag*zmag) * zmag / dzmag
 }
 
 func Mandelbrot(bounds [4]float64, width, height int, maxIter int64) Slice2D.Float64Slice2D {
