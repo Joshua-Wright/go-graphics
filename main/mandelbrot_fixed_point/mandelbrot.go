@@ -18,12 +18,14 @@ func main() {
 	maxIter := int64(512)
 	wrap := 8.0
 	base_power_2 := uint(64)
+	//base_power_2 := uint(20)
 
 	cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
 
 	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 
-	threshold2 := gmp.NewInt(2)
+	// need to use a large threshold for the smooth coloring to work
+	threshold2 := gmp.NewInt(32)
 	threshold2.Lsh(threshold2, base_power_2)
 	threshold2.Mul(threshold2, threshold2)
 
@@ -37,14 +39,11 @@ func main() {
 	bar := pb.StartNew(int(height))
 	parallel.ParallelFor(0, int(height), func(j_ int) {
 		j := int64(j_)
-		//for j := int64(0); j < height; j++ {
-		//parallel.ParallelFor(0, int(width), func(i_ int) {
-		//	i := int64(i_)
 		for i := int64(0); i < width; i++ {
 
 			cr, ci := m.MandelbrotCoordinate(i, j, width, height, centerR, centerI, zoom, base_power_2)
 
-			val := m.MandelbrotKernel(cr, ci, threshold2, maxIter, base_power_2)
+			_, val, _ := m.MandelbrotKernel(cr, ci, threshold2, maxIter, base_power_2)
 			var col color.Color
 			if val >= 0 {
 				val = math.Log2(val+1) / math.Log2(float64(maxIter)+1) * wrap
