@@ -17,9 +17,6 @@ import (
 func MandelbrotKernel(cr, ci, threshold2 *gmp.Int, maxIter int64, base_power_2 uint) float64 {
 	zr := &gmp.Int{}
 	zi := &gmp.Int{}
-	//zr2 := gmp.Int{}.Mul(zr, zr)
-	//zi2 := gmp.Int{}.Mul(zi, zi)
-	//magnitude := gmp.Int{}
 	zr2 := &gmp.Int{}
 	zi2 := &gmp.Int{}
 	magnitude := &gmp.Int{}
@@ -30,7 +27,6 @@ func MandelbrotKernel(cr, ci, threshold2 *gmp.Int, maxIter int64, base_power_2 u
 		magnitude.Add(zr2, zi2)
 		if magnitude.CmpAbs(threshold2) > 0 {
 			// TODO smooth coloring
-			//fmt.Println(magnitude, threshold2)
 			return float64(i)
 		}
 		// otherwise re-use those values
@@ -51,61 +47,53 @@ func MandelbrotKernel(cr, ci, threshold2 *gmp.Int, maxIter int64, base_power_2 u
 	return -1.0
 }
 
-// TODO: make this multiprecision
-func MandelbrotBounds(width, height int64, center complex128, zoom float64) (topLeft complex128, dr, di float64) {
-	dx := 2.0 / zoom;
-	dy := 2.0 / zoom;
-	if width > height {
-		/* widescreen image */
-		dx = float64(width) / float64(height) * dy;
-	} else if (height > width) {
-		/* portrait */
-		dy = float64(height) / float64(width) * dx;
-	} // otherwise square
-	bounds := [4]float64{
-		real(center) - dx, real(center) + dx, imag(center) - dy, imag(center) + dy,
-	};
-	topLeft = complex(bounds[0], bounds[3])
-	dr = (bounds[1] - bounds[0]) / float64(width)
-	di = (bounds[3] - bounds[2]) / float64(height)
-	return topLeft, dr, di
+func MandelbrotCoordinate(x, y, width, height int64, centerR, centerI, zoom *gmp.Int,
+	base_power_2 uint) (cr *gmp.Int, ci *gmp.Int) {
+	r := gmp.NewInt(x - width/2)
+	i := gmp.NewInt(height/2 - y)
+
+	denom := gmp.NewInt(width)
+	denom.Mul(denom, zoom)
+
+	cr = gmp.NewInt(4)
+	cr.Mul(cr, r).Lsh(cr, base_power_2).Div(cr, denom).Add(cr, centerR)
+
+	ci = gmp.NewInt(4)
+	ci.Mul(ci, i).Lsh(ci, base_power_2).Div(ci, denom).Add(ci, centerI)
+
+	return cr, ci
 }
 
 func main() {
-	width := int64(512)
+	width := int64(1024)
 	height := int64(512)
 	maxIter := int64(512)
 	wrap := 8.0
-	base_power_2 := uint(18)
-	base_float := math.Pow(2, float64(base_power_2))
-	//topLeft, dr, di := MandelbrotBounds(width, height, complex(-0.74364085, 0.13182733), 25497*1.1)
-	topLeft, dr, di := MandelbrotBounds(width, height, complex(0, 0), 1)
+	base_power_2 := uint(64)
 	filename := "mandelbrot.png"
 
 	cmap := InfernoColorMap()
 
 	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 
-	threshold2 := gmp.NewInt(int64(2 * base_float))
+	threshold2 := gmp.NewInt(2)
+	threshold2.Lsh(threshold2, base_power_2)
 	threshold2.Mul(threshold2, threshold2)
-	//println(threshold2)
+
+	//zoom := gmp.NewInt(1)
+	//centerR := gmp.NewInt(0)
+	//centerI := gmp.NewInt(0)
+	zoom := gmp.NewInt(28047)
+	centerR := ParseFixnum("-0.74364085", base_power_2)
+	centerI := ParseFixnum("0.13182733", base_power_2)
 
 	for j := int64(0); j < height; j++ {
 		parallel.ParallelFor(0, int(width), func(i_ int) {
 			i := int64(i_)
-			//for i := int64(0); i < width; i++ {
 
-			//z := complex(0, 0)
-			c := topLeft + complex(dr*float64(i), -di*float64(j))
-
-			//zr := gmp.NewInt(int64(real(z) * base_float)
-			//zi := gmp.NewInt(int64(imag(z) * base_float)
-			cr := gmp.NewInt(int64(real(c) * base_float))
-			ci := gmp.NewInt(int64(imag(c) * base_float))
+			cr, ci := MandelbrotCoordinate(i, j, width, height, centerR, centerI, zoom, base_power_2)
 
 			val := MandelbrotKernel(cr, ci, threshold2, maxIter, base_power_2)
-			//fmt.Println(cr, int64(real(c)*base_float), base_float)
-			//println(val)
 			var col color.Color
 			if val >= 0 {
 				val = math.Log2(val+1) / math.Log2(float64(maxIter)+1) * wrap
