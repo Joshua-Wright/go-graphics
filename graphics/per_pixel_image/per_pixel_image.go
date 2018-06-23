@@ -14,6 +14,10 @@ type PixelFunction interface {
 	Bounds() (w int64, h int64)
 }
 
+type PixelJobSizeOverride interface {
+	GetJobSize() int64
+}
+
 const jobSize int64 = 64 * 1024
 
 func pixelRowWorker(
@@ -22,10 +26,14 @@ func pixelRowWorker(
 	jobs chan int64,
 	wg *sync.WaitGroup,
 ) {
+	var localJobSize = jobSize
+	if override, ok := pixelFunc.(PixelJobSizeOverride); ok {
+		localJobSize = override.GetJobSize()
+	}
 	w, h := pixelFunc.Bounds()
 	size := w * h
 	for start := range jobs {
-		end := start + jobSize
+		end := start + localJobSize
 		if end >= size {
 			end = size
 		}
@@ -46,6 +54,11 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 	width, height := pixelFunc.Bounds()
 	numPixels := width * height
 
+	var localJobSize = jobSize
+	if override, ok := pixelFunc.(PixelJobSizeOverride); ok {
+		localJobSize = override.GetJobSize()
+	}
+
 	var err error
 
 	// open bitset
@@ -62,7 +75,7 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 		go pixelRowWorker(doneMask, pixelFunc, jobs, &wg)
 	}
 
-	numTasks := 1 + ((numPixels - 1) / jobSize)
+	numTasks := 1 + ((numPixels - 1) / localJobSize)
 
 	// start progress bar
 	bar := pb.New64(numTasks)
@@ -71,7 +84,7 @@ func PerPixelImage(pixelFunc PixelFunction, doneMaskFilename string) error {
 	// queue
 	wg.Add(int(numTasks))
 	for i := int64(0); i < numTasks; i++ {
-		jobs <- i * jobSize
+		jobs <- i * localJobSize
 		bar.Increment()
 	}
 	close(jobs)
