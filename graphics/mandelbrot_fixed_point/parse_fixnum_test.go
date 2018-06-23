@@ -1,4 +1,4 @@
-package main
+package mandelbrot_fixed_point
 
 import (
 	"testing"
