@@ -1,7 +1,7 @@
 package main
 
 import (
-	big "github.com/ncw/gmp"
+	"github.com/ncw/gmp"
 	"image"
 	"math"
 	"os"
@@ -12,18 +12,18 @@ import (
 )
 
 // doesn't have the right methods
-//import big "math/big"
+//import gmp "math/gmp"
 
-func MandelbrotKernel(cr, ci, threshold2 *big.Int, maxIter int64, base_power_2 uint) float64 {
-	zr := &big.Int{}
-	zi := &big.Int{}
-	//zr2 := big.Int{}.Mul(zr, zr)
-	//zi2 := big.Int{}.Mul(zi, zi)
-	//magnitude := big.Int{}
-	zr2 := &big.Int{}
-	zi2 := &big.Int{}
-	magnitude := &big.Int{}
-	zri := &big.Int{}
+func MandelbrotKernel(cr, ci, threshold2 *gmp.Int, maxIter int64, base_power_2 uint) float64 {
+	zr := &gmp.Int{}
+	zi := &gmp.Int{}
+	//zr2 := gmp.Int{}.Mul(zr, zr)
+	//zi2 := gmp.Int{}.Mul(zi, zi)
+	//magnitude := gmp.Int{}
+	zr2 := &gmp.Int{}
+	zi2 := &gmp.Int{}
+	magnitude := &gmp.Int{}
+	zri := &gmp.Int{}
 	for i := int64(0); i < maxIter; i++ {
 		zr2.Mul(zr, zr)
 		zi2.Mul(zi, zi)
@@ -86,7 +86,7 @@ func main() {
 
 	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 
-	threshold2 := big.NewInt(int64(2 * base_float))
+	threshold2 := gmp.NewInt(int64(2 * base_float))
 	threshold2.Mul(threshold2, threshold2)
 	//println(threshold2)
 
@@ -98,10 +98,10 @@ func main() {
 			//z := complex(0, 0)
 			c := topLeft + complex(dr*float64(i), -di*float64(j))
 
-			//zr := big.NewInt(int64(real(z) * base_float)
-			//zi := big.NewInt(int64(imag(z) * base_float)
-			cr := big.NewInt(int64(real(c) * base_float))
-			ci := big.NewInt(int64(imag(c) * base_float))
+			//zr := gmp.NewInt(int64(real(z) * base_float)
+			//zi := gmp.NewInt(int64(imag(z) * base_float)
+			cr := gmp.NewInt(int64(real(c) * base_float))
+			ci := gmp.NewInt(int64(imag(c) * base_float))
 
 			val := MandelbrotKernel(cr, ci, threshold2, maxIter, base_power_2)
 			//fmt.Println(cr, int64(real(c)*base_float), base_float)
