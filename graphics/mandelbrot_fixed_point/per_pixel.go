@@ -33,7 +33,7 @@ func NewMandelbrotPerPixel(width, height, maxIter int64,
 	OutIter *memory_mapped.Array2dFloat64) *MandelbrotPerPixel {
 
 	zoom_, success := new(gmp.Int).SetString(zoom, 10)
-	if (!success) {
+	if !success {
 		panic("bad zoom string")
 	}
 	centerR_ := ParseFixnum(centerR, basePower2)
@@ -76,7 +76,6 @@ func (m *MandelbrotPerPixel) GetPixel(i, j int64) {
 			return
 		}
 	}
-
 }
 
 func (m *MandelbrotPerPixel) Bounds() (w, h int64) { return m.Width, m.Height }

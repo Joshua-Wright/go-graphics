@@ -23,7 +23,10 @@ func MandelbrotKernel(cr, ci, threshold2 *gmp.Int, maxIter int64, basePower2 uin
 			z2, err := strconv.ParseFloat(magnitude2.String(), 64)
 			g.Die(err)
 			v := float64(i-1) - math.Log2(math.Log2(z2)-float64(basePower2*2)) + 1
-			return i, v, magnitude2
+			if math.IsNaN(v) {
+				v = float64(i - 1)
+			}
+			return i - 1, v, magnitude2
 		}
 		// otherwise re-use those values
 
@@ -58,5 +61,3 @@ func MandelbrotCoordinate(x, y, width, height int64, centerR, centerI, zoom *gmp
 
 	return cr, ci
 }
-
-// TODO: implement per_pixel_image.PixelFunction

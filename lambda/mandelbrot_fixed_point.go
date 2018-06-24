@@ -6,6 +6,7 @@ import (
 	m "github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point"
 	"encoding/json"
 	"github.com/ncw/gmp"
+	"log"
 )
 
 func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -13,6 +14,7 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 	err := json.Unmarshal([]byte(request.Body), &cfg)
 
 	if err != nil {
+		log.Println("bad json: ", request.Body)
 		return events.APIGatewayProxyResponse{
 			Body:       "failed: " + err.Error(),
 			StatusCode: 500,
