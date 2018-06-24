@@ -17,7 +17,8 @@ func NewXyzInterpColormap(colors []color.Color) *XyzInterpColormap {
 	ys := make([]float64, nPts)
 	zs := make([]float64, nPts)
 	for i := 0; i < nPts; i++ {
-		x, y, z := colorful.MakeColor(colors[i]).Xyz()
+		c, _ := colorful.MakeColor(colors[i])
+		x, y, z := c.Xyz()
 		xs[i] = x
 		ys[i] = y
 		zs[i] = z
