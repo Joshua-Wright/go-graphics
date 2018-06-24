@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	width := int64(512)
-	height := int64(512)
-	maxIter := int64(512)
+	width := int64(1204)
+	height := int64(1204)
+	maxIter := int64(5120)
 	wrap := 8.0
 	centerR := "-0.74364085"
 	centerI := "0.13182733"
-	zoom := "30047"
+	zoom := "120188"
 	threshold := "32.0"
 	basePower2 := uint(128)
 
