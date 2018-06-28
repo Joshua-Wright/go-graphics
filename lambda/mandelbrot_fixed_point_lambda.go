@@ -3,56 +3,25 @@ package lambda
 import (
 	m "github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point"
 	"github.com/aws/aws-lambda-go/events"
-	"encoding/json"
 	"log"
+	"encoding/gob"
+	"bytes"
 	"github.com/ncw/gmp"
-	"fmt"
 )
 
 func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var cfg m.MandelbrotPixelRangeConfig
-	err := json.Unmarshal([]byte(request.Body), &cfg)
-	//decoder := gob.NewDecoder(bytes.NewBuffer([]byte(request.Body)))
-	//err := decoder.Decode(&cfg)
+	//err := json.Unmarshal([]byte(request.Body), &cfg)
+	decoder := gob.NewDecoder(bytes.NewBuffer([]byte(request.Body)))
+	err := decoder.Decode(&cfg)
 
 	if err != nil {
-		log.Println("bad json: ", request.Body)
+		log.Println("bad input: ", request.Body)
 		return events.APIGatewayProxyResponse{
 			Body:       "failed: " + err.Error(),
 			StatusCode: 500,
 		}, err
 	}
-
-	centerR, err := m.ParseFixnumSafe(cfg.CenterR, cfg.BasePower2)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       "failed: " + err.Error(),
-			StatusCode: 500,
-		}, err
-	}
-	centerI, err := m.ParseFixnumSafe(cfg.CenterI, cfg.BasePower2)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       "failed: " + err.Error(),
-			StatusCode: 500,
-		}, err
-	}
-	zoom := new(gmp.Int)
-	zoom, success := zoom.SetString(cfg.Zoom, 10)
-	if !success {
-		return events.APIGatewayProxyResponse{
-			Body:       "failed to parse zoom",
-			StatusCode: 500,
-		}, err
-	}
-	threshold2, err := m.ParseFixnumSafe(cfg.Threshold, cfg.BasePower2)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       "failed: " + err.Error(),
-			StatusCode: 500,
-		}, err
-	}
-	threshold2.Mul(threshold2, threshold2)
 
 	iRange := cfg.Imax - cfg.Imin
 	jRange := cfg.Jmax - cfg.Jmin
@@ -66,7 +35,7 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 		resp.Val = make([]float64, size)
 	}
 	if cfg.ReturnMag2 {
-		resp.Mag2 = make([]string, size)
+		resp.Mag2 = make([]*gmp.Int, size)
 	}
 
 	for j0 := int64(0); j0 < jRange; j0++ {
@@ -74,18 +43,8 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 			i := i0 + cfg.Imin
 			j := j0 + cfg.Jmin
 
-			cr, ci := m.MandelbrotCoordinate(i, j, cfg.Width, cfg.Height, centerR, centerI, zoom, cfg.BasePower2)
-			iteration, val, mag2 := m.MandelbrotKernel(cr, ci, threshold2, cfg.MaxIter, cfg.BasePower2)
-			//fmt.Println(i0, j0, i, j,
-			//	cfg.Width, cfg.Height,
-			//	centerR.String(), centerI.String(), threshold2, zoom.String(),
-			//	cfg.MaxIter, cfg.BasePower2)
-			fmt.Println("lambda_tag1", i, j,
-				cfg.Width, cfg.Height,
-				centerR.String(), centerI.String(), zoom.String(), cfg.BasePower2)
-			fmt.Println("lambda_tag2", i, j,
-				cr.String(), ci.String(), threshold2, cfg.BasePower2)
-			fmt.Println("lambda_tag3", i, j, iteration, val, mag2.String())
+			cr, ci := m.MandelbrotCoordinate(i, j, cfg.Width, cfg.Height, cfg.CenterR, cfg.CenterI, cfg.Zoom, cfg.BasePower2)
+			iteration, val, mag2 := m.MandelbrotKernel(cr, ci, cfg.Threshold2, cfg.MaxIter, cfg.BasePower2)
 
 			idx := iRange*j0 + i0
 			if cfg.ReturnIteration {
@@ -95,18 +54,21 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 				resp.Val[idx] = val
 			}
 			if cfg.ReturnMag2 {
-				resp.Mag2[idx] = mag2.String()
+				resp.Mag2[idx] = mag2
 			}
 		}
 	}
 
-	respStr, err := json.Marshal(resp)
+	outBuffer := new(bytes.Buffer)
+	err = gob.NewEncoder(outBuffer).Encode(resp)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       "failed: " + err.Error(),
 			StatusCode: 500,
 		}, err
 	}
+
+	respStr := outBuffer.String()
 	return events.APIGatewayProxyResponse{
 		Body:       string(respStr),
 		StatusCode: 200,
