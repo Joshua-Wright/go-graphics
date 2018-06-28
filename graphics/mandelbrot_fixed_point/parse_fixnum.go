@@ -9,7 +9,6 @@ import (
 
 var digitPastDecimalRegex, regexErr = regexp.Compile(`\.\d*`)
 
-
 func ParseFixnum(decimal string, base_power_2 uint) *gmp.Int {
 	if regexErr != nil {
 		panic(regexErr)
@@ -41,7 +40,7 @@ func ParseFixnumSafe(decimal string, base_power_2 uint) (*gmp.Int, error) {
 		panic(regexErr)
 	}
 	if (strings.Count(decimal, ".") != 1) {
-		return nil, errors.New("bad number format")
+		return nil, errors.New("bad number format: " + decimal)
 	}
 	// remove whitespace things
 	decimal = strings.Replace(decimal, " ", "", -1)

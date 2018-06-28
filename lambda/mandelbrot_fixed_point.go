@@ -57,7 +57,7 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 	jRange := cfg.Jmax - cfg.Jmin
 	size := iRange * jRange
 
-	resp := m.MandelbrotSPixelRangeResponse{}
+	resp := m.MandelbrotPixelRangeResponse{}
 	if cfg.ReturnIteration {
 		resp.Iteration = make([]int64, size)
 	}

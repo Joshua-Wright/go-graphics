@@ -40,7 +40,7 @@ type MandelbrotPixelRangeConfig struct {
 }
 
 // if one of these wasn't requested, return empty array instead
-type MandelbrotSPixelRangeResponse struct {
+type MandelbrotPixelRangeResponse struct {
 	Iteration []int64   `json:"iteration"`
 	Val       []float64 `json:"val"`
 	Mag2      []string  `json:"mag2"`
