@@ -32,7 +32,7 @@ type MandelbrotPixelRangeConfig struct {
 	CenterR         string `json:"centerR"`
 	CenterI         string `json:"centerI"`
 	Zoom            string `json:"zoom"`
-	Threshold2      string `json:"threshold2"`
+	Threshold       string `json:"threshold"`
 	BasePower2      uint   `json:"basePower2"`
 	ReturnIteration bool   `json:"returnIteration"`
 	ReturnVal       bool   `json:"returnVal"`
