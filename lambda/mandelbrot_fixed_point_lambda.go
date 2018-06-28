@@ -1,12 +1,11 @@
-package main
+package lambda
 
 import (
-	"github.com/aws/aws-lambda-go/events"
 	m "github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point"
+	"github.com/aws/aws-lambda-go/events"
 	"encoding/json"
-	"github.com/ncw/gmp"
 	"log"
-	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/ncw/gmp"
 )
 
 func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -68,8 +67,8 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 		resp.Mag2 = make([]string, size)
 	}
 
-	for i0 := int64(0); i0 < iRange; i0++ {
-		for j0 := int64(0); j0 < jRange; j0++ {
+	for j0 := int64(0); j0 < jRange; j0++ {
+		for i0 := int64(0); i0 < iRange; i0++ {
 			i := i0 + cfg.Imin
 			j := j0 + cfg.Jmin
 
@@ -100,15 +99,4 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 		Body:       string(respStr),
 		StatusCode: 200,
 	}, err
-}
-
-func main() {
-	// Make the handler available for Remote Procedure Call by AWS Lambda
-	lambda.Start(MandelbrotPixel)
-	//resp, err := MandelbrotPixel(events.APIGatewayProxyRequest{
-	//	//Body:`{"i": 0,"j": 0,"width": 1024,"height": 1024,"maxIter": 5120,"centerR": "-0.74364085","centerI": "0.13182733","zoom": "120188","threshold2": "32.0","basePower2": 128}`,
-	//	//Body: `{"imin": 0,"imax": 64,"jmin": 0,"jmax": 1,"width": 64,"height": 64,"maxIter": 5120,"centerR": "-0.74364085","centerI": "0.13182733","zoom": "120188","threshold2": "1024.0","basePower2": 128,"returnIteration": false,"returnVal": true,"returnMag2": false}`,
-	//	Body: `{"imin": 0,"imax": 64,"jmin": 0,"jmax": 1,"width": 64,"height": 64,"maxIter": 5120,"centerR": "0.0","centerI": "0.0","zoom": "1","threshold2": "1024.0","basePower2": 128,"returnIteration": false,"returnVal": true,"returnMag2": false}`,
-	//})
-	//fmt.Println(resp, err)
 }
