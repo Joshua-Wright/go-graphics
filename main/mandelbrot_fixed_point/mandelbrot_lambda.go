@@ -9,12 +9,15 @@ import (
 	"image/color"
 	"github.com/joshua-wright/go-graphics/graphics/colormap"
 	"os"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"bytes"
 	"io"
 	"gopkg.in/cheggaaa/pb.v1"
+	"github.com/ncw/gmp"
+	"encoding/gob"
+	"encoding/base64"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
@@ -31,14 +34,22 @@ func main() {
 
 	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 
-	centerRstr := "0.0"
-	centerIstr := "0.0"
-	zoomstr := "1"
-	thresholdstr := "32.0"
+	threshold2 := gmp.NewInt(32)
+	threshold2.Lsh(threshold2, basePower2)
+	threshold2.Mul(threshold2, threshold2)
+
+	zoom := gmp.NewInt(1)
+	centerR := gmp.NewInt(0)
+	centerI := gmp.NewInt(0)
 
 	bar := pb.StartNew(int(height))
 	parallel.ParallelFor(0, int(height), func(j_ int) {
 		j := int64(j_)
+		defer bar.Increment()
+
+		//if j != 0 {
+		//	return
+		//}
 
 		cfg := m.MandelbrotPixelRangeConfig{
 			Imin:            0,
@@ -48,20 +59,25 @@ func main() {
 			Width:           width,
 			Height:          height,
 			MaxIter:         maxIter,
-			CenterR:         centerRstr,
-			CenterI:         centerIstr,
-			Zoom:            zoomstr,
-			Threshold:       thresholdstr,
+			CenterR:         centerR,
+			CenterI:         centerI,
+			Zoom:            zoom,
+			Threshold2:      threshold2,
 			BasePower2:      basePower2,
 			ReturnIteration: false,
 			ReturnVal:       true,
 			ReturnMag2:      false,
 		}
-		jsonCfg, err := json.Marshal(cfg)
+		cfgBuf := new(bytes.Buffer)
+		//err := gob.NewEncoder(cfgBuf).Encode(cfg)
+		//err := gob.NewEncoder(base64.NewEncoder(base64.StdEncoding, cfgBuf)).Encode(cfg)
+		err := gob.NewEncoder(cfgBuf).Encode(cfg)
 		g.Die(err)
+		//fmt.Println(cfgBuf.String())
 
-		request, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonCfg))
+		request, err := http.NewRequest("POST", endpoint, cfgBuf)
 		g.Die(err)
+		request.Header.Set("Content-Type", "application/octet-stream")
 		request.Header.Set("x-api-key", api_key)
 		client := &http.Client{}
 		response, err := client.Do(request)
@@ -75,17 +91,20 @@ func main() {
 		}
 
 		responseData := m.MandelbrotPixelRangeResponse{}
-		responseBuf := new(bytes.Buffer)
-		_, err = responseBuf.ReadFrom(response.Body)
+		gob.NewDecoder(base64.NewDecoder(base64.StdEncoding, response.Body)).Decode(&responseData)
 		if err != nil {
-			fmt.Println(j, err)
+			fmt.Println("failed to decode gob", j, err)
 			return
 		}
-		err = json.Unmarshal(responseBuf.Bytes(), &responseData)
-		if err != nil {
-			fmt.Println(j, err)
+		if len(responseData.Val) != int(width) {
+			fmt.Println("bad response, invalid length")
+			spew.Dump(responseData)
+			spew.Dump(response)
+			io.Copy(os.Stdout, response.Body)
+			panic(1)
 			return
 		}
+
 		for i := int64(0); i < width; i++ {
 
 			val := responseData.Val[i]
@@ -100,7 +119,6 @@ func main() {
 			}
 			img.Set(int(i), int(j), col)
 		}
-		bar.Increment()
 	})
 	bar.Finish()
 

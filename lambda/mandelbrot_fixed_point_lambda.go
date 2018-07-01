@@ -7,16 +7,33 @@ import (
 	"encoding/gob"
 	"bytes"
 	"github.com/ncw/gmp"
+	"encoding/base64"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
 )
 
 func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var cfg m.MandelbrotPixelRangeConfig
-	//err := json.Unmarshal([]byte(request.Body), &cfg)
-	decoder := gob.NewDecoder(bytes.NewBuffer([]byte(request.Body)))
-	err := decoder.Decode(&cfg)
+
+	if !request.IsBase64Encoded {
+		return events.APIGatewayProxyResponse{
+			Body:       "should be base64 encoded",
+			StatusCode: 500,
+		}, errors.New("should be base64 encoded")
+	}
+
+	err := gob.NewDecoder(
+		base64.NewDecoder(
+			base64.StdEncoding,
+			bytes.NewBuffer([]byte(request.Body)),
+		)).Decode(&cfg)
 
 	if err != nil {
-		log.Println("bad input: ", request.Body)
+		log.Println("err", err.Error(), "bad input: \n", request.Body)
+		for k, v := range request.Headers {
+			log.Println("header:", k, v)
+		}
+		log.Println(spew.Sdump(request))
 		return events.APIGatewayProxyResponse{
 			Body:       "failed: " + err.Error(),
 			StatusCode: 500,
@@ -60,11 +77,12 @@ func MandelbrotPixel(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 	}
 
 	outBuffer := new(bytes.Buffer)
-	err = gob.NewEncoder(outBuffer).Encode(resp)
+	err = gob.NewEncoder(base64.NewEncoder(base64.StdEncoding, outBuffer)).Encode(resp)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
-			Body:       "failed: " + err.Error(),
-			StatusCode: 500,
+			Body:            "failed: " + err.Error(),
+			StatusCode:      500,
+			IsBase64Encoded: true,
 		}, err
 	}
 
