@@ -3,7 +3,7 @@ package colormap
 import (
 	"github.com/joshua-wright/go-graphics/graphics/interpolation"
 	"image/color"
-	math "math"
+	"math"
 )
 
 type InterpColormap struct {
@@ -31,10 +31,19 @@ func NewInterpColormap(colors []color.Color) *InterpColormap {
 
 // 0 <= x < 1
 func (icm *InterpColormap) GetColor(x float64) color.RGBA {
-	return color.RGBA{
-		R: uint8(icm.r.Get(x) * 255),
-		G: uint8(icm.g.Get(x) * 255),
-		B: uint8(icm.b.Get(x) * 255),
-		A: 255,
+	if math.IsNaN(x) {
+		return color.RGBA{
+			R: 0,
+			G: 0,
+			B: 0,
+			A: 255,
+		}
+	} else {
+		return color.RGBA{
+			R: uint8(icm.r.Get(x) * 255),
+			G: uint8(icm.g.Get(x) * 255),
+			B: uint8(icm.b.Get(x) * 255),
+			A: 255,
+		}
 	}
 }
