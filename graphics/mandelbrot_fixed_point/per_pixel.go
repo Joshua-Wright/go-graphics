@@ -23,7 +23,7 @@ type MandelbrotPerPixel struct {
 }
 
 // assume that arbitrary precision integers are very expensive (because they usually are)
-func (m *MandelbrotPerPixel) GetJobSize() int64 { return 1 }
+func (m *MandelbrotPerPixel) GetJobSize() int64 { return 128}
 
 // TODO: builder pattern to reduce parameters?
 func NewMandelbrotPerPixel(width, height, maxIter int64,
