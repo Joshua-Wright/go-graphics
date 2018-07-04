@@ -1,5 +1,7 @@
 package fixnum
 
+import "math/big"
+
 // thanks to: http://www.bealto.com/mp-mandelbrot_fp-reals.html
 
 const fpWords = 4
@@ -154,9 +156,43 @@ func (z *Fixnum) MulFp(x, y *Fixnum) *Fixnum {
 // approximation
 const c1 = 1.0 / 4294967296.0           // 1 / 2^32
 const c2 = 1.0 / 18446744073709551616.0 // 1 / 2^64
-func (z *Fixnum) ToFloat() float64 {
+func (z *Fixnum) Float64() float64 {
 	if z.sign == 0 {
 		return 0.0
 	}
 	return float64(z.sign) * (float64(z.m[0]) + c1*float64(z.m[1]) + c2*float64(z.m[2]))
+}
+
+func FromBigFloat(bf *big.Float) *Fixnum {
+	f := new(Fixnum)
+	f.sign = bf.Sign()
+	if f.sign == 0 {
+		return f
+	}
+
+	if f.sign == -1 {
+		bf.Neg(bf)
+	}
+
+	for i := 0; i < fpWords; i++ {
+		b, acc := bf.Uint64()
+		if acc == big.Above || b > wordMask {
+			panic("failed to parse float, maybe number is too big?")
+		}
+		f.m[i] = uint32(b & wordMask)
+		bf.Sub(bf, new(big.Float).SetInt64(int64(b)))
+		mant := new(big.Float)
+		exp := bf.MantExp(mant)
+		bf.SetMantExp(mant, exp+32)
+	}
+
+	return f
+}
+
+func FromString(str string) (*Fixnum, error) {
+	bf, _, err := big.ParseFloat(str, 10, fpWords*32*2, big.ToNearestEven)
+	if err != nil {
+		return nil, err
+	}
+	return FromBigFloat(bf), nil
 }
