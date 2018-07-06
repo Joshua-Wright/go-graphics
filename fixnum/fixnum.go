@@ -1,24 +1,26 @@
 package fixnum
 
-import "math/big"
+import (
+	"math/big"
+)
 
 // thanks to: http://www.bealto.com/mp-mandelbrot_fp-reals.html
 
-const fpWords = 4
+const FpWords = 4
 
 // lower 32-bits set
 const wordMask uint64 = 0x00000000FFFFFFFF
 
 type Fixnum struct {
-	sign int
-	m    [fpWords]uint32
+	sign int32
+	m    [FpWords]uint32
 }
 
 func (z *Fixnum) checkZero() {
 	if z.sign == 0 {
 		return
 	}
-	for i := 0; i < fpWords; i++ {
+	for i := 0; i < FpWords; i++ {
 		if z.m[i] != 0 {
 			return
 		}
@@ -53,7 +55,7 @@ func (z *Fixnum) SetInt(x int) *Fixnum {
 
 func (z *Fixnum) addWords(g *Fixnum) *Fixnum {
 	var c uint64 = 0
-	for i := int(fpWords - 1); i >= 0; i-- {
+	for i := int(FpWords - 1); i >= 0; i-- {
 		c += uint64(z.m[i]) + uint64(g.m[i])
 		z.m[i] = uint32(c & wordMask)
 		c >>= 32
@@ -63,7 +65,7 @@ func (z *Fixnum) addWords(g *Fixnum) *Fixnum {
 
 func (z *Fixnum) subWords(x *Fixnum) *Fixnum {
 	var c uint64 = 0
-	for i := int(fpWords - 1); i >= 0; i-- {
+	for i := int(FpWords - 1); i >= 0; i-- {
 		y := uint64(z.m[i]) - uint64(x.m[i]) - c
 		z.m[i] = uint32(y & wordMask)
 		if y >= 0x100000000 {
@@ -76,7 +78,7 @@ func (z *Fixnum) subWords(x *Fixnum) *Fixnum {
 }
 
 func (z *Fixnum) cmpWords(x *Fixnum) int {
-	for i := 0; i < fpWords; i++ {
+	for i := 0; i < FpWords; i++ {
 		if z.m[i] > x.m[i] {
 			return 1
 		};
@@ -87,7 +89,25 @@ func (z *Fixnum) cmpWords(x *Fixnum) int {
 	return 0;
 }
 
-func (z *Fixnum) AddFp(x, y *Fixnum) *Fixnum {
+func (z *Fixnum) Neg() *Fixnum {
+	z.sign = -z.sign
+	return z
+}
+
+func (z *Fixnum) Sub(x, y *Fixnum) *Fixnum {
+	if x == nil {
+		x = z
+	}
+	y2 := *y
+	y2.Neg()
+	z.Add(x, &y2)
+	return z
+}
+
+func (z *Fixnum) Add(x, y *Fixnum) *Fixnum {
+	if x == nil {
+		x = z
+	}
 	z.Set(x)
 	if y.sign == 0 {
 		return z
@@ -114,7 +134,10 @@ func (z *Fixnum) AddFp(x, y *Fixnum) *Fixnum {
 	return z
 }
 
-func (z *Fixnum) MulFp(x, y *Fixnum) *Fixnum {
+func (z *Fixnum) Mul(x, y *Fixnum) *Fixnum {
+	if x == nil {
+		x = z
+	}
 	if x.sign == 0 || y.sign == 0 {
 		z.SetZero()
 		return z
@@ -123,17 +146,17 @@ func (z *Fixnum) MulFp(x, y *Fixnum) *Fixnum {
 	z.sign = x.sign * y.sign
 
 	// multiply (trivial way)
-	var aux [fpWords]uint64
-	for i := 0; i < fpWords; i++ {
-		for j := 0; j < fpWords; j++ {
+	var aux [FpWords]uint64
+	for i := 0; i < FpWords; i++ {
+		for j := 0; j < FpWords; j++ {
 			k := i + j
-			if k > fpWords {
+			if k > FpWords {
 				continue
 			}
 			u1 := uint64(x.m[i]) * uint64(y.m[j]);
 			u0 := u1 & wordMask; // lower 32 bits, index K
 			u1 >>= 32;           // higher 32 bits, index K-1
-			if k < fpWords {
+			if k < FpWords {
 				aux[k] += u0
 			}
 			if k > 0 {
@@ -144,7 +167,7 @@ func (z *Fixnum) MulFp(x, y *Fixnum) *Fixnum {
 
 	// propagate carry
 	var c uint64
-	for i := int(fpWords - 1); i >= 0; i-- {
+	for i := int(FpWords - 1); i >= 0; i-- {
 		c += aux[i];
 		z.m[i] = uint32(c & wordMask);
 		c >>= 32;
@@ -165,7 +188,7 @@ func (z *Fixnum) Float64() float64 {
 
 func FromBigFloat(bf *big.Float) *Fixnum {
 	f := new(Fixnum)
-	f.sign = bf.Sign()
+	f.sign = int32(bf.Sign())
 	if f.sign == 0 {
 		return f
 	}
@@ -174,7 +197,7 @@ func FromBigFloat(bf *big.Float) *Fixnum {
 		bf.Neg(bf)
 	}
 
-	for i := 0; i < fpWords; i++ {
+	for i := 0; i < FpWords; i++ {
 		b, acc := bf.Uint64()
 		if acc == big.Above || b > wordMask {
 			panic("failed to parse float, maybe number is too big?")
@@ -190,7 +213,7 @@ func FromBigFloat(bf *big.Float) *Fixnum {
 }
 
 func FromString(str string) (*Fixnum, error) {
-	bf, _, err := big.ParseFloat(str, 10, fpWords*32*2, big.ToNearestEven)
+	bf, _, err := big.ParseFloat(str, 10, FpWords*32*2, big.ToNearestEven)
 	if err != nil {
 		return nil, err
 	}

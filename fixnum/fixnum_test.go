@@ -21,19 +21,55 @@ func TestFixnum_SetInt(t *testing.T) {
 	}
 }
 
+func TestFixnum_SubFp(t *testing.T) {
+	// integers
+	for i := -20; i < 20; i++ {
+		for j := -20; j < 20; j++ {
+			f := new(Fixnum).SetInt(i)
+			g := new(Fixnum).SetInt(j)
+			assert.Equal(t, float64(i-j), f.Sub(f, g).Float64())
+		}
+	}
+
+	rd := rand.New(rand.NewSource(123))
+
+	signs := []int32{-1, 1}
+	// integers with fractional component
+	for i := 0; i < 10; i++ {
+
+		f := new(Fixnum)
+		g := new(Fixnum)
+
+		f.sign = signs[rd.Intn(len(signs))]
+		f.m[0] = uint32(rd.Int31n(20))
+		f.m[1] = rd.Uint32()
+
+		g.sign = signs[rd.Intn(len(signs))]
+		g.m[0] = uint32(rd.Int31n(20))
+		g.m[1] = rd.Uint32()
+
+		ff := f.Float64()
+		gf := g.Float64()
+
+		expected := ff - gf
+		actual := f.Sub(f, g).Float64()
+		assert.Equal(t, expected, actual)
+	}
+}
+
 func TestFixnum_AddFp(t *testing.T) {
 	// integers
 	for i := -20; i < 20; i++ {
 		for j := -20; j < 20; j++ {
 			f := new(Fixnum).SetInt(i)
 			g := new(Fixnum).SetInt(j)
-			assert.Equal(t, float64(i+j), f.AddFp(f, g).Float64())
+			assert.Equal(t, float64(i+j), f.Add(f, g).Float64())
 		}
 	}
 
 	rd := rand.New(rand.NewSource(123))
 
-	signs := []int{-1, 1}
+	signs := []int32{-1, 1}
 	// integers with fractional component
 	for i := 0; i < 10; i++ {
 
@@ -52,7 +88,7 @@ func TestFixnum_AddFp(t *testing.T) {
 		gf := g.Float64()
 
 		expected := ff + gf
-		actual := f.AddFp(f, g).Float64()
+		actual := f.Add(f, g).Float64()
 		assert.Equal(t, expected, actual)
 	}
 }
@@ -63,13 +99,13 @@ func TestFixnum_MulFp(t *testing.T) {
 		for j := -20; j < 20; j++ {
 			f := new(Fixnum).SetInt(i)
 			g := new(Fixnum).SetInt(j)
-			assert.Equal(t, float64(i*j), f.MulFp(f, g).Float64())
+			assert.Equal(t, float64(i*j), f.Mul(f, g).Float64())
 		}
 	}
 
 	rd := rand.New(rand.NewSource(123))
 
-	signs := []int{-1, 1}
+	signs := []int32{-1, 1}
 	// integers with fractional component
 	for i := 0; i < 10; i++ {
 
@@ -88,7 +124,7 @@ func TestFixnum_MulFp(t *testing.T) {
 		gf := g.Float64()
 
 		expected := ff * gf
-		actual := f.MulFp(f, g).Float64()
+		actual := f.Mul(f, g).Float64()
 		assert.Equal(t, expected, actual)
 	}
 }
