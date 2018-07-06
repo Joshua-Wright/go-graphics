@@ -4,9 +4,10 @@ import (
 	"math/big"
 )
 
+//////////////////////////////////////////////////////////////////////
 // thanks to: http://www.bealto.com/mp-mandelbrot_fp-reals.html
 
-const FpWords = 4
+const FpWords = 16
 
 // lower 32-bits set
 const wordMask uint64 = 0x00000000FFFFFFFF
@@ -95,9 +96,6 @@ func (z *Fixnum) Neg() *Fixnum {
 }
 
 func (z *Fixnum) Sub(x, y *Fixnum) *Fixnum {
-	if x == nil {
-		x = z
-	}
 	y2 := *y
 	y2.Neg()
 	z.Add(x, &y2)
@@ -105,9 +103,6 @@ func (z *Fixnum) Sub(x, y *Fixnum) *Fixnum {
 }
 
 func (z *Fixnum) Add(x, y *Fixnum) *Fixnum {
-	if x == nil {
-		x = z
-	}
 	z.Set(x)
 	if y.sign == 0 {
 		return z
@@ -135,9 +130,6 @@ func (z *Fixnum) Add(x, y *Fixnum) *Fixnum {
 }
 
 func (z *Fixnum) Mul(x, y *Fixnum) *Fixnum {
-	if x == nil {
-		x = z
-	}
 	if x.sign == 0 || y.sign == 0 {
 		z.SetZero()
 		return z
@@ -218,4 +210,17 @@ func FromString(str string) (*Fixnum, error) {
 		return nil, err
 	}
 	return FromBigFloat(bf), nil
+}
+
+func (f *Fixnum) FromInt32(i int32) *Fixnum {
+	if i < 0 {
+		f.sign = -1
+		f.m[0] = uint32(-i)
+	} else if i == 0 {
+		f.sign = 0
+	} else {
+		f.sign = 1
+		f.m[0] = uint32(i)
+	}
+	return f
 }

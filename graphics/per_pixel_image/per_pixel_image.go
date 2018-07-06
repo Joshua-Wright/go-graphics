@@ -18,6 +18,10 @@ type PixelJobSizeOverride interface {
 	GetJobSize() int64
 }
 
+type PixelFunctionWithCache interface {
+	GetCachedWorker() PixelFunction
+}
+
 const jobSize int64 = 64 * 1024
 
 func pixelRowWorker(
@@ -29,6 +33,9 @@ func pixelRowWorker(
 	var localJobSize = jobSize
 	if override, ok := pixelFunc.(PixelJobSizeOverride); ok {
 		localJobSize = override.GetJobSize()
+	}
+	if cache, ok := pixelFunc.(PixelFunctionWithCache); ok {
+		pixelFunc = cache.GetCachedWorker()
 	}
 	w, h := pixelFunc.Bounds()
 	size := w * h
