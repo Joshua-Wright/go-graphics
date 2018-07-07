@@ -51,7 +51,7 @@ func NewMandelbrotPerPixel(width, height, maxIter int64,
 	}
 
 	// try to use naive fixnum
-	words := bits/32 + 1
+	words := (bits+31)/32 + 1
 	c, ok := naive_fixnum.FixnumConstructorMap[words]
 	if ok {
 		fmt.Println("usng", words, "words (need", bits, "bits)")
