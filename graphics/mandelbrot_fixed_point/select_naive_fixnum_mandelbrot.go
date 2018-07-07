@@ -56,9 +56,6 @@ func NewMandelbrotPerPixel(width, height, maxIter int64,
 	if ok {
 		fmt.Println("usng", words, "words (need", bits, "bits)")
 		return c(width, height, maxIter, centerR, centerI, zoom, threshold, Wrap, MaxVal, cmap, OutImage, OutIter)
-	} else {
-		fmt.Println("failed to find", bits, "bits, or", words, "words!")
-		return nil
 	}
 
 	// use gmp
