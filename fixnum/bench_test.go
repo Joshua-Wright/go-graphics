@@ -76,7 +76,8 @@ func MandelbrotKernelFixnum(cr, ci, threshold2 *Fixnum, maxIter int64, basePower
 
 		// calculate 2ab/B + ci. Instead of multiplying by 2, just shift right by one less
 		// (calculate out of place to not disturb zi for the next calculation)
-		zri.Mul(zr, zi).Mul(nil, one_half).Add(zri, ci)
+		zri.Mul(zr, zi)
+		zri.Mul(zri, one_half).Add(zri, ci)
 
 		// calculate (a^2 - b^2)/B + cr (in place this time)
 		zr.Sub(zr2, zi2).Add(zr, cr)
