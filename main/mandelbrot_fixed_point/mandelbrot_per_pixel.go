@@ -9,15 +9,16 @@ import (
 )
 
 func main() {
-	width := int64(1204)
-	height := int64(1204)
-	maxIter := int64(5120)
-	wrap := 8.0
-	centerR := "-0.74364085"
-	centerI := "0.13182733"
-	zoom := "120188"
+	width := int64(512)
+	height := int64(512)
+	centerR := "-1.23048"
+	centerI := "-0.02471"
+	zoom := "8"
+
+	maxIter := int64(256)
+	basePower2 := uint(90)
 	threshold := "32.0"
-	basePower2 := uint(128)
+	wrap := 12.0
 
 	cmap := colormap.NewXyzInterpColormap(colormap.InfernoColorMap())
 

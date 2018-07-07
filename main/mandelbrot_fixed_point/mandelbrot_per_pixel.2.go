@@ -11,9 +11,9 @@ import (
 func main() {
 	width := int64(512)
 	height := int64(512)
-	centerR := "-1.23048"
-	centerI := "-0.02471"
-	zoom := "8"
+	centerR := "0.0"
+	centerI := "0.0"
+	zoom := "2"
 
 	maxIter := int64(5120)
 	threshold := "32.0"
