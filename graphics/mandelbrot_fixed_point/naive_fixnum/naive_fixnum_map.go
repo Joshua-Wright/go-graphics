@@ -30,9 +30,18 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum/generated/naive_fixnum_28"
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum/generated/naive_fixnum_29"
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum/generated/naive_fixnum_30"
+	"github.com/joshua-wright/go-graphics/graphics/colormap"
+	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
+	"github.com/joshua-wright/go-graphics/graphics/per_pixel_image"
 )
 
-var FixnumConstructorMap = map[uint64]MandelbrotPerPixelConstructor{
+type MandelbrotPerPixelConstructor func(width, height, maxIter int64,
+	centerR, centerI, zoom, threshold string,
+	Wrap, MaxVal float64, cmap colormap.ColorMap,
+	OutImage *memory_mapped.PPMFile,
+	OutIter *memory_mapped.Array2dFloat64) per_pixel_image.PixelFunction
+var FixnumConstructorMap = map[uint]MandelbrotPerPixelConstructor{
+
 	2 : naive_fixnum_2.NewMandelbrotPerPixel,
 	3 : naive_fixnum_3.NewMandelbrotPerPixel,
 	4 : naive_fixnum_4.NewMandelbrotPerPixel,

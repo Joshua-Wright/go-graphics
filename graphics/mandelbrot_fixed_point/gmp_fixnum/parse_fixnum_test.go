@@ -1,4 +1,4 @@
-package mandelbrot_fixed_point
+package gmp_fixnum
 
 import (
 	"testing"

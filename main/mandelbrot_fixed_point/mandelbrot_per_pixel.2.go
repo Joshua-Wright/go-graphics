@@ -5,15 +5,18 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/per_pixel_image"
 	"github.com/joshua-wright/go-graphics/graphics/colormap"
 	"github.com/joshua-wright/go-graphics/graphics/memory_mapped"
-	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum"
+	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point"
 )
 
 func main() {
 	width := int64(512)
 	height := int64(512)
-	centerR := "-1.7490868103567926827901785714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714286"
-	centerI := "0.00035485293981043127901785714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714"
-	zoom := "35840000000000000"
+	//centerR := "-1.7490868103567926827901785714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714286"
+	//centerI := "0.00035485293981043127901785714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714285714"
+	//zoom := "35840000000000000"
+	centerR := "0.0"
+	centerI := "0.0"
+	zoom := "1.0"
 
 	maxIter := int64(5120)
 	threshold := "32.0"
@@ -30,7 +33,7 @@ func main() {
 	g.Die(err)
 
 	err = per_pixel_image.PerPixelImage(
-		naive_fixnum.NewMandelbrotPerPixel(
+		mandelbrot_fixed_point.NewMandelbrotPerPixel(
 			width, height,
 			maxIter,
 			centerR,
