@@ -9,7 +9,7 @@ import (
 	"image/color"
 )
 
-var oneHalf, _ = FromString("0.5")
+var two = new(Fixnum).FromInt32(2)
 
 type MandelbrotPerPixel struct {
 	Width, Height   int64
@@ -77,6 +77,7 @@ func NewMandelbrotPerPixel(width, height, maxIter int64,
 		Width:      width,
 		Height:     height,
 		MaxIter:    maxIter,
+		// TODO: make these values in-place
 		centerR:    *centerR_,
 		centerI:    *centerI_,
 		dr:         *dr,
@@ -127,12 +128,10 @@ func (m *MandelbrotPerPixelDelegate) MandelbrotKernel() {
 	m.magnitude2.SetZero()
 	m.zri.SetZero()
 	for i := int64(0); i < m.parent.MaxIter; i++ {
-		m.zr2.Mul(&m.zr, &m.zr)
-		m.zi2.Mul(&m.zi, &m.zi)
 		m.magnitude2.Add(&m.zr2, &m.zi2)
 		if m.magnitude2.cmpWords(&m.parent.threshold2) > 0 {
 			z2 := m.magnitude2.Float64()
-			v := float64(i-1) - math.Log2(math.Log2(z2)-2.0) + 1
+			v := float64(i-1) - math.Log2(math.Log2(z2)) + 1
 			if math.IsNaN(v) {
 				v = float64(i - 1)
 			}
@@ -144,13 +143,14 @@ func (m *MandelbrotPerPixelDelegate) MandelbrotKernel() {
 		// calculate 2ab/B + m.ci. Instead of multiplying by 2, just shift right by one less
 		// (calculate out of place to not disturb &m.zi for the next calculation)
 		m.zri.Mul(&m.zr, &m.zi)
-		m.zri.Mul(&m.zri, oneHalf).Add(&m.zri, &m.ci)
+		m.zri.Mul(&m.zri, two).Add(&m.zri, &m.ci)
 
 		// calculate (a^2 - b^2)/B + m.cr (in place this time)
 		m.zr.Sub(&m.zr2, &m.zi2).Add(&m.zr, &m.cr)
 
-		// swap &m.zri and &m.zi. &m.zi is now the real value, and &m.zri can maybe have its memory re-used next iteration
-		m.zri, m.zi = m.zi, m.zri
+		m.zi = m.zri
+		m.zr2.Mul(&m.zr, &m.zr)
+		m.zi2.Mul(&m.zi, &m.zi)
 	}
 	// explicit not in set sentinel value
 	m.val = -1.0

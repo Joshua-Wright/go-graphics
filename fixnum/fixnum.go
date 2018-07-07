@@ -7,7 +7,7 @@ import (
 //////////////////////////////////////////////////////////////////////
 // thanks to: http://www.bealto.com/mp-mandelbrot_fp-reals.html
 
-const FpWords = 16
+const FpWords = 4
 
 // lower 32-bits set
 const wordMask uint64 = 0x00000000FFFFFFFF
@@ -204,6 +204,7 @@ func FromBigFloat(bf *big.Float) *Fixnum {
 	return f
 }
 
+// TODO: make this an instance method
 func FromString(str string) (*Fixnum, error) {
 	bf, _, err := big.ParseFloat(str, 10, FpWords*32*2, big.ToNearestEven)
 	if err != nil {
