@@ -52,10 +52,12 @@ func NewMandelbrotPerPixel(width, height, maxIter int64,
 
 	// try to use naive fixnum
 	words := (bits+31)/32 + 1
-	c, ok := naive_fixnum.FixnumConstructorMap[words]
-	if ok {
-		fmt.Println("usng", words, "words (need", bits, "bits)")
-		return c(width, height, maxIter, centerR, centerI, zoom, threshold, Wrap, MaxVal, cmap, OutImage, OutIter)
+	for i := 0; i < len(naive_fixnum.FixnumConstructorWords); i++ {
+		if naive_fixnum.FixnumConstructorWords[i] >= words {
+			fmt.Println("usng", words, "words (need", bits, "bits)")
+			c := naive_fixnum.FixnumConstructors[i]
+			return c(width, height, maxIter, centerR, centerI, zoom, threshold, Wrap, MaxVal, cmap, OutImage, OutIter)
+		}
 	}
 
 	// use gmp
