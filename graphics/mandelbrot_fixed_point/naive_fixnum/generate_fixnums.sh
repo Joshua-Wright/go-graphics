@@ -21,6 +21,8 @@ done
 
 echo "package naive_fixnum" > naive_fixnum_map.go
 echo >> naive_fixnum_map.go
+echo "//go:generate bash generate_fixnums.sh" >> naive_fixnum_map.go
+echo >> naive_fixnum_map.go
 echo "import (" >> naive_fixnum_map.go
 for i in $words; do
 	echo "	\"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum/generated/naive_fixnum_$i\"" >> naive_fixnum_map.go

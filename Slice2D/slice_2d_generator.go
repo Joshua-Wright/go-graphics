@@ -1,3 +1,5 @@
+//+build ignore
+
 package main
 
 import (
@@ -5,10 +7,8 @@ import (
 	"log"
 	"text/template"
 	"strings"
-	"path/filepath"
 )
 
-//+build ignore
 
 type Type struct {
 	Import   string // full import line, e.g. `import "github.com/fogleman/gg"`
@@ -56,6 +56,7 @@ func PackageLocalType(pkg, t string) Type {
 	}
 }
 
+//go:generate go run slice_2d_generator.go
 func main() {
 	sliceTemplate := template.Must(template.New("Slice2D").Parse(Slice2DTemplate))
 
@@ -92,7 +93,8 @@ func main() {
 		}
 
 		for _, t := range types {
-			f, err := os.Create(filepath.Join("..", t.Filename))
+			//f, err := os.Create(filepath.Join("..", t.Filename))
+			f, err := os.Create(t.Filename)
 			//f, err := os.Create(t.Filename)
 			die(err)
 			err = sliceTemplate.Execute(f, t)

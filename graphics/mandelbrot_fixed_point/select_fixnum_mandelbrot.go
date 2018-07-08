@@ -10,7 +10,6 @@ import (
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum"
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot"
 	g "github.com/joshua-wright/go-graphics/graphics"
-	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/gmp_fixnum"
 )
 
 func NewMandelbrotPerPixel(width, height, maxIter int64,
@@ -61,6 +60,8 @@ func NewMandelbrotPerPixel(width, height, maxIter int64,
 	}
 
 	// use gmp
-	return gmp_fixnum.NewMandelbrotPerPixel(
+	//return gmp_fixnum.NewMandelbrotPerPixel(
+	//	width, height, maxIter, centerR, centerI, zoom, threshold, uint(bits), Wrap, MaxVal, cmap, OutImage, OutIter)
+	return NewMandelbrotPerPixelGmp(
 		width, height, maxIter, centerR, centerI, zoom, threshold, uint(bits), Wrap, MaxVal, cmap, OutImage, OutIter)
 }

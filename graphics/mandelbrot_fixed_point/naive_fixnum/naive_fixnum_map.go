@@ -1,5 +1,7 @@
 package naive_fixnum
 
+//go:generate bash generate_fixnums.sh
+
 import (
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum/generated/naive_fixnum_2"
 	"github.com/joshua-wright/go-graphics/graphics/mandelbrot_fixed_point/naive_fixnum/generated/naive_fixnum_3"
