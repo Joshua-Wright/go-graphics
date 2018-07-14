@@ -14,3 +14,6 @@ func (v Vec2) Cross(u Vec2) Float {
 func Vec2Midpoint(a, b Vec2) Vec2 { return a.AddV(b).DivS(2.0) }
 func Vec3Midpoint(a, b Vec3) Vec3 { return a.AddV(b).DivS(2.0) }
 func Vec4Midpoint(a, b Vec4) Vec4 { return a.AddV(b).DivS(2.0) }
+
+func Vec2Lerp(a, b Vec2, t float64) Vec2 { return Vec2{Lerp(a.X, b.X, t), Lerp(a.Y, b.Y, t)} }
+
