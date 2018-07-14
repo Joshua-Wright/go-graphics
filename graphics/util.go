@@ -22,6 +22,41 @@ func Lerp(v0, v1, t float64) float64 {
 	return (1-t)*v0 + t*v1
 }
 
+func CmpThreshold(a, b, threshold float64) bool {
+	return math.Abs(a-b) < threshold
+}
+
+func AbsCmpThreshold(a, b, threshold float64) bool {
+	return math.Abs(math.Abs(a)-math.Abs(b)) < threshold
+}
+
+//MinimalAngleMapping finds angles equivalent to input angles with minimum difference
+func MinimalAngleMapping(angle1, angle2 float64) (float64, float64) {
+	type p struct {
+		a1, a2 float64
+	}
+	angles := []p{
+		{angle1, angle2},
+		{angle1 + 2*math.Pi, angle2},
+		{angle1 - 2*math.Pi, angle2},
+		{angle1, angle2 + 2*math.Pi},
+		{angle1, angle2 - 2*math.Pi},
+	}
+	minDiff := 99999.0
+	a1 := 0.0
+	a2 := 0.0
+	for i := 0; i < len(angles); i++ {
+		diff := math.Abs(angles[i].a2 - angles[i].a1)
+		if diff < minDiff {
+			minDiff = diff
+			a1 = angles[i].a1
+			a2 = angles[i].a2
+		}
+	}
+	return a1, a2
+}
+
+
 type Ray struct {
 	Origin    Vec3
 	Direction Vec3
