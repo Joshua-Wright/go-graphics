@@ -7,7 +7,7 @@ import (
 )
 
 // 1/phi
-const inv_phi = 0.6180339887498948482
+const inv_phi = 1.0/1.618033988749894848204586834365638117720309179805762862135
 
 func main() {
 	width := 2048  *2
@@ -65,29 +65,33 @@ func main() {
 	}
 
 	// draw
-	ctx.SetRGB(1, 0, 0)
-	ctx.SetLineCap(gg.LineCapButt)
+	ctx.SetLineCap(gg.LineCapRound)
 	ctx.SetLineWidth(linewidth)
+
 	for _, v := range halfKites {
-		ctx.SetRGB(0,0,0)
+		ctx.SetRGB(1,0,0)
 		ctx.MoveTo(v.A.X, v.A.Y)
 		ctx.LineTo(v.C.X, v.C.Y)
 		ctx.LineTo(v.B.X, v.B.Y)
-		ctx.StrokePreserve()
-		ctx.SetRGB(1,0,0)
-		//ctx.LineTo(v.A.X, v.A.Y)
 		ctx.Fill()
+		ctx.Stroke()
+
+		ctx.SetRGB(0,0,0)
+		ctx.DrawLine(v.A.X, v.A.Y, v.C.X, v.C.Y)
+		ctx.DrawLine(v.C.X, v.C.Y, v.B.X, v.B.Y)
 		ctx.Stroke()
 	}
 	for _, v := range halfDarts {
-		ctx.SetRGB(0, 0, 0)
+		ctx.SetRGB(0,0,1)
 		ctx.MoveTo(v.A.X, v.A.Y)
 		ctx.LineTo(v.C.X, v.C.Y)
 		ctx.LineTo(v.B.X, v.B.Y)
-		//ctx.LineTo(v.A.X, v.A.Y)
-		ctx.StrokePreserve()
-		ctx.SetRGB(0, 0, 1)
 		ctx.Fill()
+		ctx.Stroke()
+
+		ctx.SetRGB(0,0,0)
+		ctx.DrawLine(v.A.X, v.A.Y, v.C.X, v.C.Y)
+		ctx.DrawLine(v.C.X, v.C.Y, v.B.X, v.B.Y)
 		ctx.Stroke()
 	}
 
