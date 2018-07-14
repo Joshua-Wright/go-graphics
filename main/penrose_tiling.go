@@ -3,17 +3,18 @@ package main
 import (
 	"github.com/fogleman/gg"
 	g "github.com/joshua-wright/go-graphics/graphics"
+	"math"
 )
 
 // 1/phi
 const inv_phi = 0.6180339887498948482
 
 func main() {
-	width := 2048 * 2
+	width := 2048  *2
 	height := int(float64(width) * inv_phi)
 	scale := float64(width) * 1
-	linewidth := 3.0
-	depth := 7
+	linewidth := 6.0 * 2
+	depth := 6
 
 	ctx := gg.NewContext(width, height)
 	ctx.SetHexColor("#ffffff")
@@ -47,21 +48,66 @@ func main() {
 		halfDarts = halfDarts2
 	}
 
+	// scale points
+	scalePoint := func(v *g.Vec2) {
+		v.X *= scale
+		v.Y = float64(height) - v.Y*scale
+	}
+	for i, _ := range halfKites {
+		scalePoint(&halfKites[i].A)
+		scalePoint(&halfKites[i].B)
+		scalePoint(&halfKites[i].C)
+	}
+	for i, _ := range halfDarts {
+		scalePoint(&halfDarts[i].A)
+		scalePoint(&halfDarts[i].B)
+		scalePoint(&halfDarts[i].C)
+	}
+
 	// draw
-	ctx.SetHexColor("#000000")
+	ctx.SetRGB(1, 0, 0)
+	ctx.SetLineCap(gg.LineCapButt)
 	ctx.SetLineWidth(linewidth)
 	for _, v := range halfKites {
-		ctx.MoveTo(v.A.X*scale, v.A.Y*scale)
-		ctx.LineTo(v.B.X*scale, v.B.Y*scale)
-		ctx.LineTo(v.C.X*scale, v.C.Y*scale)
-		ctx.LineTo(v.A.X*scale, v.A.Y*scale)
+		ctx.SetRGB(0,0,0)
+		ctx.MoveTo(v.A.X, v.A.Y)
+		ctx.LineTo(v.C.X, v.C.Y)
+		ctx.LineTo(v.B.X, v.B.Y)
+		ctx.StrokePreserve()
+		ctx.SetRGB(1,0,0)
+		//ctx.LineTo(v.A.X, v.A.Y)
+		ctx.Fill()
 		ctx.Stroke()
 	}
 	for _, v := range halfDarts {
-		ctx.MoveTo(v.A.X*scale, v.A.Y*scale)
-		ctx.LineTo(v.B.X*scale, v.B.Y*scale)
-		ctx.LineTo(v.C.X*scale, v.C.Y*scale)
-		ctx.LineTo(v.A.X*scale, v.A.Y*scale)
+		ctx.SetRGB(0, 0, 0)
+		ctx.MoveTo(v.A.X, v.A.Y)
+		ctx.LineTo(v.C.X, v.C.Y)
+		ctx.LineTo(v.B.X, v.B.Y)
+		//ctx.LineTo(v.A.X, v.A.Y)
+		ctx.StrokePreserve()
+		ctx.SetRGB(0, 0, 1)
+		ctx.Fill()
+		ctx.Stroke()
+	}
+
+	r1 := math.Sqrt(halfKites[0].A.SubV(halfKites[0].B).Mag2()) / 8
+	ctx.SetHexColor("#ff0000")
+	ctx.SetRGB(1, 1, 0)
+	for _, v := range halfKites {
+		abMid := g.Vec2Lerp(v.B, v.A, inv_phi)
+		//abMid := g.Vec2Midpoint(v.B, v.A)
+		ctx.DrawCircle(abMid.X, abMid.Y, r1)
+		ctx.Fill()
+		ctx.Stroke()
+	}
+
+	r2 := math.Sqrt(halfDarts[0].A.SubV(halfDarts[0].B).Mag2()) / 8
+	ctx.SetRGB(0, 1, 0)
+	for _, v := range halfDarts {
+		//abMid := g.Vec2Lerp(v.B, v.A, inv_phi)
+		abMid := g.Vec2Midpoint(v.B, v.A)
+		ctx.DrawCircle(abMid.X, abMid.Y, r2)
 		ctx.Fill()
 		ctx.Stroke()
 	}
@@ -90,8 +136,8 @@ func (k *HalfKite) Split(halfKites []HalfKite, halfDarts []HalfDart) ([]HalfKite
 	}
 	d1 := HalfDart{
 		A: acMid,
-		B: abMid,
-		C: k.A,
+		B: k.A,
+		C: abMid,
 	}
 	return append(halfKites, k1, k2), append(halfDarts, d1)
 }
