@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/fogleman/gg"
 	g "github.com/joshua-wright/go-graphics/graphics"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 // 1/phi
@@ -14,6 +15,12 @@ func main() {
 	scale := float64(width) * 1
 	linewidth := 6.0
 	depth := 8
+
+	// http://paletton.com/#uid=75C0u0kllllPnEKu4sicBeo3T7r
+	kiteFillColor, _ := colorful.Hex("#FD0006")
+	dartFillColor, _ := colorful.Hex("#FF7100")
+	thickLineColor, _ := colorful.Hex("#088984")
+	thinLineColor, _ := colorful.Hex("#14B70B")
 
 	ctx := gg.NewContext(width, height)
 	ctx.SetHexColor("#ffffff")
@@ -65,10 +72,10 @@ func main() {
 
 	// draw
 	ctx.SetLineCap(gg.LineCapRound)
-	ctx.SetLineWidth(linewidth)
+	ctx.SetLineWidth(1)
 
 	for _, v := range halfKites {
-		ctx.SetRGB(1, 0, 0)
+		ctx.SetColor(kiteFillColor)
 		ctx.MoveTo(v.A.X, v.A.Y)
 		ctx.LineTo(v.C.X, v.C.Y)
 		ctx.LineTo(v.B.X, v.B.Y)
@@ -81,7 +88,7 @@ func main() {
 		ctx.Stroke()
 	}
 	for _, v := range halfDarts {
-		ctx.SetRGB(0, 0, 1)
+		ctx.SetColor(dartFillColor)
 		ctx.MoveTo(v.A.X, v.A.Y)
 		ctx.LineTo(v.C.X, v.C.Y)
 		ctx.LineTo(v.B.X, v.B.Y)
@@ -115,7 +122,8 @@ func main() {
 	//	ctx.Stroke()
 	//}
 
-	ctx.SetRGB(0, 1, 0)
+	ctx.SetColor(thickLineColor)
+	ctx.SetLineWidth(linewidth)
 	thickArcKiteRadius := halfKites[0].A.SubV(halfKites[0].B).Mag() * inv_phi
 	for _, v := range halfKites {
 		angle1 := g.Angle(v.B.SubV(v.A))
@@ -134,7 +142,7 @@ func main() {
 		ctx.Stroke()
 	}
 
-	ctx.SetRGB(0, 1, 1)
+	ctx.SetColor(thinLineColor)
 	ctx.SetLineWidth(linewidth * 0.5)
 	thinArcKiteRadius := halfKites[0].A.SubV(halfKites[0].B).Mag() * (1.0 - inv_phi)
 	for _, v := range halfKites {
@@ -202,4 +210,3 @@ func (d *HalfDart) Split(halfKites []HalfKite, halfDarts []HalfDart) ([]HalfKite
 	}
 	return append(halfKites, k1), append(halfDarts, d1)
 }
-
