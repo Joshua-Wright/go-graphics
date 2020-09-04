@@ -3,6 +3,8 @@ package graphics
 import (
 	"image"
 	"image/color"
+	"image/draw"
+	"os"
 )
 
 //func ReRangePoints(pts []Vec2, wd int, bounds [4]Float) []Vec2 {
@@ -84,4 +86,19 @@ func RasterizePointsPalletted(width, height int, pts []Vec2, bounds [4]Float) *i
 	}
 
 	return img
+}
+
+func OpenImageAsNRGBA(filename string) (*image.NRGBA, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	src, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+	b := src.Bounds()
+	dst := image.NewNRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+	return dst, nil
 }
